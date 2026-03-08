@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Karamjeet Singh â€” Finance | Risk | Portfolio Analytics</title>
+<title>Karamjeet Singh - Finance | Risk | Portfolio Analytics</title>
 <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/>
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -357,7 +357,7 @@
           </div>
 
           <p style="color:#444;font-size:.96rem;line-height:1.8;max-width:520px;margin-bottom:36px">
-            As an <strong style="color:#111">FRM candidate</strong>, I apply <strong style="color:#111">Modern Portfolio Theory</strong>, covariance-based risk models, and <strong style="color:#111">SLSQP optimization</strong> to turn noisy market data into precise, actionable investment decisions. The tool below isn't a demo - it runs on <strong style="color:#111">live market data</strong>.
+            As an <strong style="color:#111">FRM candidate</strong>, I focus on <strong style="color:#111">quantitative risk analysis</strong>, portfolio analytics, and financial modeling. Through data-driven tools and analytical models, I apply financial theory to real market data to better understand <strong style="color:#111">portfolio behavior</strong>, <strong style="color:#111">risk exposure</strong>, and market dynamics.
           </p>
 
           <div style="display:flex;flex-wrap:wrap;gap:12px">
@@ -370,11 +370,6 @@
                onmouseover="this.style.borderColor='#5a8a00';this.style.color='#5a8a00'"
                onmouseout="this.style.borderColor='#ccc';this.style.color='#111'">
               in LINKEDIN
-            </a>
-
-            <a href="./resume.html" target="_blank"
-               style="font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:12px 24px;background:transparent;color:#5a8a00;border:2px solid #5a8a00;text-decoration:none;transition:all .2s">
-              VIEW RESUME
             </a>
 
           </div>
@@ -399,9 +394,9 @@
 
       <!-- LEFT: Bio text -->
       <div class="reveal left" style="display:flex;flex-direction:column;gap:20px;color:#444;font-size:.97rem;line-height:1.85">
-        <p>I'm <strong style="color:#111">Karamjeet Singh</strong>, a finance professional and <strong style="color:#111">FRM candidate</strong> focused on quantitative risk analysis and portfolio management.</p>
-        <p>My work combines <strong style="color:#111">financial theory with AI</strong> to build data-driven models for <strong style="color:#111">portfolio optimization</strong>, <strong style="color:#111">risk measurement</strong>, and <strong style="color:#111">performance analysis</strong> using Python and modern risk frameworks.</p>
-        <p>I work with <strong style="color:#111">market data</strong> across equities and global indices to generate structured, practical <strong style="color:#111">risk insights</strong> that support better investment decisions.</p>
+        <p>I'm <strong style="color:#111">Karamjeet Singh</strong>, an <strong style="color:#111">FRM candidate</strong> with a strong interest in <strong style="color:#111">financial risk management</strong>, <strong style="color:#111">quantitative analysis</strong>, and <strong style="color:#111">portfolio analytics</strong>.</p>
+        <p>I enjoy exploring how <strong style="color:#111">financial markets</strong> behave and how <strong style="color:#111">risk</strong> can be measured, modeled, and better understood using data. My work combines <strong style="color:#111">financial theory</strong> with AI to build data driven models to analyze portfolios, evaluate <strong style="color:#111">risk exposure</strong>, and study market dynamics.</p>
+        <p>I am particularly curious about how analytical tools and <strong style="color:#111">quantitative frameworks</strong> can transform complex market data into structured insights that support better <strong style="color:#111">financial decision-making</strong>.</p>
         <div style="padding-top:8px">
           <a href="#contact-section" onclick="scrollToContact()"
              style="font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:12px 24px;background:#111;color:#c8f135;border:2px solid #111;text-decoration:none;display:inline-block;transition:all .2s"
@@ -676,7 +671,7 @@
             <div style="margin-bottom:16px">
               <label>Stock Tickers <span class="label-hint">type &amp; press Enter</span></label>
               <div class="tag-input-wrap" id="tag-wrap">
-                <input class="tag-input" id="ticker-input" placeholder="e.g. TSLAâ€¦"/>
+                <input class="tag-input" id="ticker-input" placeholder="e.g. TSLA..."/>
               </div>
             </div>
             <div>
@@ -716,7 +711,7 @@
                 <span class="font-mono text-xs font-bold" style="color:#5a8a00"><span id="rfr-display">2.0</span>% p.a.</span>
               </div>
               <input type="range" id="rfr-slider" min="-5" max="20" step="0.5" value="2"/>
-              <div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:.7rem;color:#888;margin-top:4px"><span>âˆ’5%</span><span>20%</span></div>
+              <div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:.7rem;color:#888;margin-top:4px"><span>-5%</span><span>20%</span></div>
             </div>
             <div>
               <label>Return Frequency</label>
@@ -736,14 +731,14 @@
         <button id="optimize-btn"
           onclick="runOptimization()"
           style="width:100%;font-family:JetBrains Mono,monospace;font-weight:900;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;padding:15px;background:#111;color:#c8f135;border:2px solid #111;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;cursor:pointer">
-          âš¡ OPTIMIZE PORTFOLIO
+          OPTIMIZE PORTFOLIO
         </button>
       </div>
 
       <!-- RIGHT RESULTS -->
       <div id="results-panel">
         <div class="neo-box" style="padding:48px;text-align:center">
-          <div style="font-size:2.5rem;margin-bottom:12px;opacity:.2">ðŸ“ˆ</div>
+          <div style="font-size:2.5rem;margin-bottom:12px;opacity:.2">-</div>
           <p class="font-mono text-xs tracking-widest uppercase" style="color:#888">Configure assets and click optimize</p>
         </div>
       </div>
@@ -1454,6 +1449,7 @@ function drawFrontier(pts, data, rfr) {
 
 </body>
 </html>
+
 
 
 
