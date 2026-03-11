@@ -265,11 +265,7 @@
        class="font-mono text-xs font-bold tracking-widest uppercase px-4 py-2 text-gray-600 hover:text-neo-dark transition-all border border-transparent hover:border-gray-300">
       /about
     </a>
-    <a href="./resume.html" target="_blank" id="nav-resume-view"
-       class="font-mono text-xs font-bold tracking-widest uppercase px-4 py-2 text-gray-600 hover:text-neo-dark transition-all border border-transparent hover:border-gray-300">
-      /resume
-    </a>
-    <div class="dropdown relative" id="port-dropdown">
+    <div class="dropdown relative flex items-center" id="port-dropdown">
       <a href="#" onclick="toggleDropdown(event)" id="nav-portfolio"
          class="font-mono text-xs font-bold tracking-widest uppercase px-4 py-2 text-gray-600 hover:text-neo-dark transition-all border border-transparent hover:border-gray-300">
         /work ▼
@@ -298,7 +294,6 @@
 <div id="mobile-menu">
   <a href="#" onclick="showPage('home');closeMobileMenu()">/ Home</a>
   <a href="#" onclick="showPage('home');scrollToAbout();closeMobileMenu()">/ About</a>
-  <a href="./resume.html" target="_blank" onclick="closeMobileMenu()">/ Resume</a>
   <a href="#" onclick="showPage('portfolio');closeMobileMenu()">Portfolio Optimizer</a>
   <a href="https://var.karamfrm.com" target="_blank" onclick="closeMobileMenu()">Tail Risk Analyzer</a>
   <a href="#" onclick="showPage('home');scrollToContact();closeMobileMenu()">âœ‰ Connect</a>
@@ -599,6 +594,15 @@
                 linkedin.com/in/<br class="contact-linebreak"/>karamjeet-singh12
               </span>
             </a>
+            <a href="./resume.html" target="_blank" class="contact-link" style="display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0">
+              <div style="width:34px;height:34px;background:#f3f3ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:2px;border:1px solid #d8d8d0">
+                <span style="color:#111;font-size:.78rem;font-weight:700">CV</span>
+              </div>
+              <span style="font-family:JetBrains Mono,monospace;font-size:.78rem;font-weight:700;color:#1a1a1a;word-break:break-all;transition:color .2s"
+                    onmouseover="this.style.color='#5a8a00'" onmouseout="this.style.color='#111'">
+                View Resume
+              </span>
+            </a>
           </div>
         </div>
 
@@ -637,7 +641,6 @@
       <a href="mailto:karamfrm@gmail.com" class="font-mono text-xs tracking-widest uppercase hover:text-black transition-colors" style="color:#666">Email</a>
       <a href="https://www.linkedin.com/in/karamjeet-singh12" target="_blank" class="font-mono text-xs tracking-widest uppercase hover:text-black transition-colors" style="color:#666">LinkedIn</a>
       <a href="#" onclick="showPage('portfolio')" class="font-mono text-xs tracking-widest uppercase hover:text-black transition-colors" style="color:#666">Portfolio Tool</a>
-      <a href="./resume.html" target="_blank" class="font-mono text-xs tracking-widest uppercase hover:text-black transition-colors" style="color:#666">View Resume</a>
     </div>
   </footer>
 
@@ -1212,7 +1215,10 @@ function renderResults(data, isLive) {
     // â”€â”€ Efficient Frontier chart
     + '<div class="neo-box" style="padding:18px 22px">'
     + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// EFFICIENT FRONTIER</div>'
+    + '<div id="frontier-wrap" style="position:relative">'
     + '<canvas id="frontier-canvas" style="width:100%;height:320px;display:block"></canvas>'
+    + '<div id="frontier-tooltip" style="position:absolute;display:none;pointer-events:none;z-index:3;min-width:160px;padding:10px 12px;background:rgba(255,255,255,0.96);border:1px solid #d8d8d0;box-shadow:0 8px 22px rgba(0,0,0,.08)"></div>'
+    + '</div>'
     + '</div>'
 
     // â”€â”€ Equal-Weighted Comparison Card
@@ -1254,193 +1260,342 @@ function renderResults(data, isLive) {
 
 function drawFrontier(pts, data, rfr) {
   var canvas = document.getElementById('frontier-canvas');
-  if (!canvas) return;
+  var tooltip = document.getElementById('frontier-tooltip');
+  var wrap = document.getElementById('frontier-wrap');
+  if (!canvas || !tooltip || !wrap || !pts || !pts.length) return;
   if (!rfr) rfr = 0.02;
 
-  pts = pts.slice().sort(function(a,b){ return a.vol - b.vol; });
+  pts = pts.slice().sort(function(a, b) { return a.vol - b.vol; });
 
-  var dpr  = window.devicePixelRatio || 1;
-  var cssW = canvas.parentElement ? canvas.parentElement.clientWidth - 40 : 580;
+  var dpr = window.devicePixelRatio || 1;
+  var cssW = wrap.clientWidth || 580;
   var cssH = 320;
-  canvas.style.width  = cssW + 'px';
+  canvas.style.width = cssW + 'px';
   canvas.style.height = cssH + 'px';
-  canvas.width  = cssW * dpr;
+  canvas.width = cssW * dpr;
   canvas.height = cssH * dpr;
+
   var ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  var W = cssW, H = cssH;
-  var padL = 66, padR = 28, padT = 28, padB = 54;
+  var W = cssW;
+  var H = cssH;
+  var padL = 68;
+  var padR = 28;
+  var padT = 26;
+  var padB = 54;
 
-  var vols = pts.map(function(p){ return p.vol; });
-  var rets = pts.map(function(p){ return p.ret; });
+  var ms = data.max_sharpe || { vol: data.volatility, ret: data.expected_return, sr: data.sharpe_ratio };
+  var mv = data.min_variance || pts[0];
+  var mr = data.max_return || pts[pts.length - 1];
+  var eq = data.equal_weighted || null;
 
-  // Special portfolio points
-  var ms = data.max_sharpe   || { vol: data.volatility, ret: data.expected_return };
-  var mv = data.min_variance || { vol: Math.min.apply(null,vols), ret: Math.min.apply(null,rets) };
-  var mr = data.max_return   || { vol: Math.max.apply(null,vols), ret: Math.max.apply(null,rets) };
-  var eq = data.equal_weighted || {};
+  var allVols = pts.map(function(p) { return p.vol; }).concat([ms.vol, mv.vol, mr.vol]);
+  var allRets = pts.map(function(p) { return p.ret; }).concat([ms.ret, mv.ret, mr.ret, rfr]);
+  if (eq && eq.vol && eq.ret) {
+    allVols.push(eq.vol);
+    allRets.push(eq.ret);
+  }
 
-  // Axis ranges
-  var allVols = vols.concat([ms.vol, mv.vol, mr.vol, eq.vol||0]).filter(Boolean);
-  var allRets = rets.concat([ms.ret, mv.ret, mr.ret, eq.ret||0]).filter(Boolean);
   var minV = 0;
-  var maxV = Math.max.apply(null, allVols) * 1.14;
-  var minR = Math.min(rfr * 0.4, Math.min.apply(null, allRets) * 0.85);
-  var maxR = Math.max.apply(null, allRets) * 1.14;
+  var maxV = Math.max.apply(null, allVols) * 1.12;
+  var minR = Math.min(rfr, Math.min.apply(null, allRets)) * 0.92;
+  var maxR = Math.max.apply(null, allRets) * 1.1;
 
-  function xp(v){ return padL + (v-minV)/(maxV-minV) * (W-padL-padR); }
-  function yp(r){ return padT + (1-(r-minR)/(maxR-minR)) * (H-padT-padB); }
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Grid
-  var nX=6, nY=5;
-  ctx.strokeStyle='#e0e0d8'; ctx.lineWidth=1;
-  for(var gx=0;gx<=nX;gx++){
-    var xx=padL+gx*(W-padL-padR)/nX;
-    ctx.beginPath();ctx.moveTo(xx,padT);ctx.lineTo(xx,H-padB);ctx.stroke();
-  }
-  for(var gy=0;gy<=nY;gy++){
-    var yy=padT+gy*(H-padT-padB)/nY;
-    ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();
+  function xp(v) {
+    return padL + ((v - minV) / (maxV - minV)) * (W - padL - padR);
   }
 
-  // Axis labels
-  ctx.fillStyle='#888'; ctx.font='10px JetBrains Mono,monospace';
-  ctx.textAlign='center';
-  for(var lx=0;lx<=nX;lx++){
-    var lxv=minV+lx*(maxV-minV)/nX;
-    ctx.fillText((lxv*100).toFixed(1)+'%', padL+lx*(W-padL-padR)/nX, H-padB+17);
-  }
-  ctx.textAlign='right';
-  for(var ly=0;ly<=nY;ly++){
-    var lyv=minR+(1-ly/nY)*(maxR-minR);
-    ctx.fillText((lyv*100).toFixed(1)+'%', padL-8, padT+ly*(H-padT-padB)/nY+4);
+  function yp(r) {
+    return padT + (1 - ((r - minR) / (maxR - minR))) * (H - padT - padB);
   }
 
-  // Axis titles
-  ctx.fillStyle='#aaa'; ctx.font='9px JetBrains Mono,monospace';
-  ctx.textAlign='center';
-  ctx.fillText('RISK  (VOLATILITY \u03c3)', padL+(W-padL-padR)/2, H-5);
-  ctx.save(); ctx.translate(13, padT+(H-padT-padB)/2); ctx.rotate(-Math.PI/2);
-  ctx.fillText('EXPECTED RETURN', 0, 0); ctx.restore();
-
-  // Axis border
-  ctx.strokeStyle='#bbb'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,H-padB); ctx.lineTo(W-padR,H-padB); ctx.stroke();
-
-  // CML
-  var cmlSlope = (ms.ret-rfr)/ms.vol;
-  ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle='#4aaa88'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(xp(0),yp(rfr)); ctx.lineTo(xp(maxV*0.98), yp(rfr+cmlSlope*maxV*0.98)); ctx.stroke();
-  ctx.setLineDash([]); ctx.restore();
-
-  // Gradient fill under frontier
-  var grad=ctx.createLinearGradient(0,padT,0,H-padB);
-  grad.addColorStop(0,'rgba(90,138,0,0.13)'); grad.addColorStop(1,'rgba(90,138,0,0.01)');
-  ctx.beginPath();
-  ctx.moveTo(xp(pts[0].vol),H-padB);
-  for(var fi=0;fi<pts.length;fi++) ctx.lineTo(xp(pts[fi].vol),yp(pts[fi].ret));
-  ctx.lineTo(xp(pts[pts.length-1].vol),H-padB);
-  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-
-  // Frontier curve
-  ctx.strokeStyle='#3a7dd0'; ctx.lineWidth=2.5; ctx.lineJoin='round';
-  ctx.beginPath();
-  for(var ci=0;ci<pts.length;ci++){
-    if(ci===0) ctx.moveTo(xp(pts[ci].vol),yp(pts[ci].ret));
-    else ctx.lineTo(xp(pts[ci].vol),yp(pts[ci].ret));
-  }
-  ctx.stroke();
-
-  // Helper: draw annotated point with offset label + arrow
-  function annotate(px, py, color, shape, label, srLabel, dx, dy) {
-    // Arrow
-    var lx2=px+dx, ly2=py+dy;
-    ctx.strokeStyle=color; ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(lx2, ly2); ctx.stroke();
-
-    // Marker
-    ctx.save(); ctx.fillStyle=color; ctx.strokeStyle='#fff'; ctx.lineWidth=2;
-    if(shape==='circle'){
-      ctx.beginPath(); ctx.arc(px,py,7,0,Math.PI*2); ctx.fill(); ctx.stroke();
-    } else if(shape==='star'){
-      drawStar(ctx,px,py,9);
-      ctx.fill(); ctx.stroke();
-    } else if(shape==='triangle'){
-      ctx.beginPath(); ctx.moveTo(px,py-9); ctx.lineTo(px+8,py+6); ctx.lineTo(px-8,py+6);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-    } else if(shape==='diamond'){
-      ctx.beginPath(); ctx.moveTo(px,py-9); ctx.lineTo(px+7,py); ctx.lineTo(px,py+9); ctx.lineTo(px-7,py);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-    }
-    ctx.restore();
-
-    // Label box
-    ctx.font='bold 10px JetBrains Mono,monospace';
-    var tw=ctx.measureText(label).width;
-    var tw2=ctx.measureText(srLabel).width;
-    var boxW=Math.max(tw,tw2)+14; var boxH=srLabel?34:20;
-    var bx=lx2+(dx>0?2:-boxW-2); var by=ly2-boxH/2;
-    if(dx===0) { bx=lx2-boxW/2; by=ly2+(dy>0?4:-boxH-4); }
-    ctx.fillStyle='rgba(255,255,255,0.93)'; ctx.strokeStyle=color; ctx.lineWidth=1;
-    ctx.fillRect(bx,by,boxW,boxH); ctx.strokeRect(bx,by,boxW,boxH);
-    ctx.fillStyle=color; ctx.textAlign='left';
-    ctx.fillText(label, bx+7, by+13);
-    if(srLabel){ ctx.fillStyle='#666'; ctx.font='9px JetBrains Mono,monospace'; ctx.fillText(srLabel, bx+7, by+26); }
-  }
-
-  function drawStar(ctx,cx,cy,r){
+  function drawStar(px, py, r) {
     ctx.beginPath();
-    for(var si=0;si<10;si++){
-      var rad=(si%2===0?r:r*0.45);
-      var ang=(Math.PI/5)*si-Math.PI/2;
-      if(si===0) ctx.moveTo(cx+rad*Math.cos(ang),cy+rad*Math.sin(ang));
-      else ctx.lineTo(cx+rad*Math.cos(ang),cy+rad*Math.sin(ang));
+    for (var i = 0; i < 10; i++) {
+      var rad = i % 2 === 0 ? r : r * 0.45;
+      var ang = (Math.PI / 5) * i - Math.PI / 2;
+      if (i === 0) ctx.moveTo(px + rad * Math.cos(ang), py + rad * Math.sin(ang));
+      else ctx.lineTo(px + rad * Math.cos(ang), py + rad * Math.sin(ang));
     }
     ctx.closePath();
   }
 
-  // â”€â”€ Plot the 4 special portfolios
-  // Min Variance â€” green circle, label left
-  annotate(xp(mv.vol), yp(mv.ret), '#2ca02c', 'circle',
-    'Min Variance', 'SR: '+(mv.sr||0).toFixed(2), -14, -30);
-
-  // Max Sharpe â€” orange star, label top-right
-  annotate(xp(ms.vol), yp(ms.ret), '#ff7f0e', 'star',
-    'Max Sharpe', 'SR: '+(ms.sr||0).toFixed(2), 14, -30);
-
-  // Max Return â€” red triangle, label right
-  annotate(xp(mr.vol), yp(mr.ret), '#d62728', 'triangle',
-    'Max Return', 'SR: '+(mr.sr||0).toFixed(2), 14, -14);
-
-  // Equal Weighted â€” purple diamond, label bottom
-  if(eq.vol && eq.ret) {
-    annotate(xp(eq.vol), yp(eq.ret), '#9467bd', 'diamond',
-      'Equal Weight', 'SR: '+(eq.sr||0).toFixed(2), 0, 30);
+  var markers = [
+    { key: 'mv', name: 'Min Variance', color: '#2ca02c', shape: 'circle', vol: mv.vol, ret: mv.ret, sr: mv.sr || ((mv.ret - rfr) / Math.max(mv.vol, 0.0001)) },
+    { key: 'ms', name: 'Max Sharpe', color: '#ff7f0e', shape: 'star', vol: ms.vol, ret: ms.ret, sr: ms.sr || data.sharpe_ratio },
+    { key: 'mr', name: 'Max Return', color: '#d62728', shape: 'triangle', vol: mr.vol, ret: mr.ret, sr: mr.sr || ((mr.ret - rfr) / Math.max(mr.vol, 0.0001)) }
+  ];
+  if (eq && eq.vol && eq.ret) {
+    markers.push({ key: 'eq', name: 'Equal Weight', color: '#9467bd', shape: 'diamond', vol: eq.vol, ret: eq.ret, sr: eq.sr || ((eq.ret - rfr) / Math.max(eq.vol, 0.0001)) });
   }
 
-  // Legend
-  function legendItem(color, shape, text, ox, oy) {
-    ctx.fillStyle=color;
-    var lx3=W-padR-148+ox, ly3=H-padB-88+oy;
-    if(shape==='circle'){ ctx.beginPath();ctx.arc(lx3+5,ly3+5,5,0,Math.PI*2);ctx.fill(); }
-    else if(shape==='star'){ ctx.save();ctx.translate(lx3+5,ly3+5);drawStar(ctx,0,0,6);ctx.fill();ctx.restore(); }
-    else if(shape==='triangle'){ ctx.beginPath();ctx.moveTo(lx3+5,ly3);ctx.lineTo(lx3+10,ly3+10);ctx.lineTo(lx3,ly3+10);ctx.closePath();ctx.fill(); }
-    else if(shape==='diamond'){ ctx.beginPath();ctx.moveTo(lx3+5,ly3);ctx.lineTo(lx3+10,ly3+5);ctx.lineTo(lx3+5,ly3+10);ctx.lineTo(lx3,ly3+5);ctx.closePath();ctx.fill(); }
-    else if(shape==='line'){ ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(lx3,ly3+5);ctx.lineTo(lx3+10,ly3+5);ctx.stroke();ctx.setLineDash([]);ctx.restore(); }
-    ctx.fillStyle='#444'; ctx.font='9.5px JetBrains Mono,monospace'; ctx.textAlign='left';
-    ctx.fillText(text, lx3+14, ly3+9);
+  function drawMarker(marker, active) {
+    var px = xp(marker.vol);
+    var py = yp(marker.ret);
+    var size = active ? 9 : 7;
+
+    ctx.save();
+    ctx.fillStyle = marker.color;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = active ? 2.5 : 2;
+    if (active) {
+      ctx.shadowColor = 'rgba(0,0,0,0.16)';
+      ctx.shadowBlur = 12;
+    }
+
+    if (marker.shape === 'circle') {
+      ctx.beginPath();
+      ctx.arc(px, py, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    } else if (marker.shape === 'star') {
+      drawStar(px, py, size + 1);
+      ctx.fill();
+      ctx.stroke();
+    } else if (marker.shape === 'triangle') {
+      ctx.beginPath();
+      ctx.moveTo(px, py - size - 1);
+      ctx.lineTo(px + size, py + size - 2);
+      ctx.lineTo(px - size, py + size - 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (marker.shape === 'diamond') {
+      ctx.beginPath();
+      ctx.moveTo(px, py - size - 1);
+      ctx.lineTo(px + size, py);
+      ctx.lineTo(px, py + size + 1);
+      ctx.lineTo(px - size, py);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
   }
-  var lbx=W-padR-152, lby=H-padB-94;
-  ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.strokeStyle='#ddd'; ctx.lineWidth=1;
-  ctx.fillRect(lbx,lby,148,94); ctx.strokeRect(lbx,lby,148,94);
-  legendItem('#2ca02c','circle',  'Min Variance',   4, 6);
-  legendItem('#ff7f0e','star',    'Max Sharpe',      4, 24);
-  legendItem('#d62728','triangle','Max Return',      4, 42);
-  legendItem('#9467bd','diamond', 'Equal Weighted',  4, 60);
-  legendItem('#4aaa88','line',    'Capital Mkt Line',4, 78);
+
+  function drawLegend() {
+    var boxX = padL + 8;
+    var boxY = padT + 8;
+    var boxW = 150;
+    var boxH = markers.length > 3 ? 96 : 78;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.93)';
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    ctx.fillRect(boxX, boxY, boxW, boxH);
+    ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+    function legendItem(color, shape, text, row) {
+      var ix = boxX + 14;
+      var iy = boxY + 16 + row * 18;
+      ctx.fillStyle = color;
+
+      if (shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(ix, iy, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (shape === 'star') {
+        drawStar(ix, iy, 5.5);
+        ctx.fill();
+      } else if (shape === 'triangle') {
+        ctx.beginPath();
+        ctx.moveTo(ix, iy - 6);
+        ctx.lineTo(ix + 5, iy + 4);
+        ctx.lineTo(ix - 5, iy + 4);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shape === 'diamond') {
+        ctx.beginPath();
+        ctx.moveTo(ix, iy - 6);
+        ctx.lineTo(ix + 5, iy);
+        ctx.lineTo(ix, iy + 6);
+        ctx.lineTo(ix - 5, iy);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shape === 'line') {
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ix - 6, iy);
+        ctx.lineTo(ix + 6, iy);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.fillStyle = '#444';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(text, ix + 12, iy + 3);
+    }
+
+    legendItem('#2ca02c', 'circle', 'Min Variance', 0);
+    legendItem('#ff7f0e', 'star', 'Max Sharpe', 1);
+    legendItem('#d62728', 'triangle', 'Max Return', 2);
+    if (markers.length > 3) legendItem('#9467bd', 'diamond', 'Equal Weight', 3);
+    legendItem('#4aaa88', 'line', 'Capital Mkt Line', markers.length > 3 ? 4 : 3);
+  }
+
+  function redraw(activeKey) {
+    ctx.clearRect(0, 0, W, H);
+
+    var nX = 6;
+    var nY = 5;
+    ctx.strokeStyle = '#e4e4dc';
+    ctx.lineWidth = 1;
+    for (var gx = 0; gx <= nX; gx++) {
+      var xx = padL + gx * (W - padL - padR) / nX;
+      ctx.beginPath();
+      ctx.moveTo(xx, padT);
+      ctx.lineTo(xx, H - padB);
+      ctx.stroke();
+    }
+    for (var gy = 0; gy <= nY; gy++) {
+      var yy = padT + gy * (H - padT - padB) / nY;
+      ctx.beginPath();
+      ctx.moveTo(padL, yy);
+      ctx.lineTo(W - padR, yy);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#888';
+    ctx.font = '10px JetBrains Mono,monospace';
+    ctx.textAlign = 'center';
+    for (var lx = 0; lx <= nX; lx++) {
+      var lxv = minV + lx * (maxV - minV) / nX;
+      ctx.fillText((lxv * 100).toFixed(1) + '%', padL + lx * (W - padL - padR) / nX, H - padB + 17);
+    }
+
+    ctx.textAlign = 'right';
+    for (var ly = 0; ly <= nY; ly++) {
+      var lyv = minR + (1 - ly / nY) * (maxR - minR);
+      ctx.fillText((lyv * 100).toFixed(1) + '%', padL - 8, padT + ly * (H - padT - padB) / nY + 4);
+    }
+
+    ctx.fillStyle = '#999';
+    ctx.font = '9px JetBrains Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('RISK (VOLATILITY)', padL + (W - padL - padR) / 2, H - 6);
+    ctx.save();
+    ctx.translate(14, padT + (H - padT - padB) / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('EXPECTED RETURN', 0, 0);
+    ctx.restore();
+
+    ctx.strokeStyle = '#bbb';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, H - padB);
+    ctx.lineTo(W - padR, H - padB);
+    ctx.stroke();
+
+    var cmlEndVol = maxV * 0.985;
+    var cmlEndRet = rfr + ((ms.ret - rfr) / Math.max(ms.vol, 0.0001)) * cmlEndVol;
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = '#4aaa88';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(xp(0), yp(rfr));
+    ctx.lineTo(xp(cmlEndVol), yp(cmlEndRet));
+    ctx.stroke();
+    ctx.restore();
+
+    var grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+    grad.addColorStop(0, 'rgba(58,125,208,0.12)');
+    grad.addColorStop(1, 'rgba(58,125,208,0.015)');
+    ctx.beginPath();
+    ctx.moveTo(xp(pts[0].vol), H - padB);
+    for (var fi = 0; fi < pts.length; fi++) {
+      ctx.lineTo(xp(pts[fi].vol), yp(pts[fi].ret));
+    }
+    ctx.lineTo(xp(pts[pts.length - 1].vol), H - padB);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.strokeStyle = '#2f6fb8';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var ci = 0; ci < pts.length; ci++) {
+      var fx = xp(pts[ci].vol);
+      var fy = yp(pts[ci].ret);
+      if (ci === 0) ctx.moveTo(fx, fy);
+      else ctx.lineTo(fx, fy);
+    }
+    ctx.stroke();
+
+    for (var mi = 0; mi < markers.length; mi++) {
+      drawMarker(markers[mi], markers[mi].key === activeKey);
+    }
+
+    drawLegend();
+  }
+
+  function setTooltip(marker, clientX, clientY) {
+    tooltip.style.display = 'block';
+    tooltip.style.borderLeft = '3px solid ' + marker.color;
+    tooltip.innerHTML =
+      '<div style="font-family:JetBrains Mono,monospace;font-size:.64rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:' + marker.color + ';margin-bottom:6px">' + marker.name + '</div>' +
+      '<div style="font-family:JetBrains Mono,monospace;font-size:.75rem;color:#444;line-height:1.7">Return: ' + (marker.ret * 100).toFixed(2) + '%<br>Volatility: ' + (marker.vol * 100).toFixed(2) + '%<br>Sharpe: ' + (marker.sr || 0).toFixed(3) + '</div>';
+
+    var wrapRect = wrap.getBoundingClientRect();
+    var tooltipRect = tooltip.getBoundingClientRect();
+    var left = clientX - wrapRect.left + 16;
+    var top = clientY - wrapRect.top - tooltipRect.height / 2;
+
+    if (left + tooltipRect.width > wrapRect.width - 8) left = clientX - wrapRect.left - tooltipRect.width - 16;
+    if (left < 8) left = 8;
+    if (top < 8) top = 8;
+    if (top + tooltipRect.height > wrapRect.height - 8) top = wrapRect.height - tooltipRect.height - 8;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+
+  function hideTooltip() {
+    tooltip.style.display = 'none';
+  }
+
+  canvas.onmousemove = function(e) {
+    var rect = canvas.getBoundingClientRect();
+    var mx = (e.clientX - rect.left) * (cssW / rect.width);
+    var my = (e.clientY - rect.top) * (cssH / rect.height);
+    var active = null;
+
+    for (var i = 0; i < markers.length; i++) {
+      var px = xp(markers[i].vol);
+      var py = yp(markers[i].ret);
+      var dist = Math.sqrt(Math.pow(mx - px, 2) + Math.pow(my - py, 2));
+      if (dist <= 16) {
+        active = markers[i];
+        break;
+      }
+    }
+
+    if (active) {
+      canvas.style.cursor = 'pointer';
+      redraw(active.key);
+      setTooltip(active, e.clientX, e.clientY);
+    } else {
+      canvas.style.cursor = 'default';
+      redraw('');
+      hideTooltip();
+    }
+  };
+
+  canvas.onmouseleave = function() {
+    canvas.style.cursor = 'default';
+    hideTooltip();
+    redraw('');
+  };
+
+  redraw('');
 }
 
 
