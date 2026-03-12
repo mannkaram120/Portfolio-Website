@@ -711,10 +711,11 @@
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0">Risk-free Rate</label>
-                <span class="font-mono text-xs font-bold" style="color:#5a8a00"><span id="rfr-display">2.0</span>% p.a.</span>
+                <span class="font-mono text-xs font-bold" style="color:#5a8a00"><span id="rfr-display">2.00</span>% p.a.</span>
               </div>
-              <input type="range" id="rfr-slider" min="-5" max="20" step="0.5" value="2"/>
+              <input type="range" id="rfr-slider" min="-5" max="20" step="0.01" value="2"/>
               <div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:.7rem;color:#888;margin-top:4px"><span>-5%</span><span>20%</span></div>
+              <div id="rfr-live-note" style="margin-top:8px;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.04em;color:#777">Default uses current 1-year Treasury when available.</div>
             </div>
             <div>
               <label>Return Frequency</label>
@@ -1014,9 +1015,36 @@ var runOptimization; /* hoisted â€” defined fully below after IIFE */
     var display = document.getElementById('rfr-display');
     if (!slider || !display) return;
     var v = parseFloat(slider.value);
-    display.textContent = v.toFixed(1);
+    display.textContent = v.toFixed(2);
     var pct = ((v + 5) / 25) * 100;
     slider.style.background = 'linear-gradient(to right, #5a8a00 ' + pct + '%, #ddd ' + pct + '%)';
+  }
+
+  function initLiveRiskFreeRate() {
+    var slider = document.getElementById('rfr-slider');
+    var note = document.getElementById('rfr-live-note');
+    if (!slider || !API_URL || slider.getAttribute('data-live-loaded') === '1') return;
+
+    fetch(API_URL + '/risk-free-rate')
+      .then(function(res) {
+        if (!res.ok) throw new Error('Failed to fetch live risk-free rate');
+        return res.json();
+      })
+      .then(function(data) {
+        if (!data || typeof data.rate_percent !== 'number' || isNaN(data.rate_percent)) return;
+        slider.value = Math.max(-5, Math.min(20, data.rate_percent)).toFixed(2);
+        slider.setAttribute('data-live-loaded', '1');
+        if (note) {
+          note.textContent = 'Live 1-year Treasury default: ' + data.rate_percent.toFixed(2) + '%'
+            + (data.as_of ? ' as of ' + data.as_of : '') + '.';
+        }
+        updateSlider();
+      })
+      .catch(function() {
+        slider.setAttribute('data-live-loaded', '1');
+        if (note) note.textContent = 'Default uses current 1-year Treasury when available.';
+        updateSlider();
+      });
   }
 
   window._getActiveTickers = function() { return activeTickers.slice(); };
@@ -1046,9 +1074,10 @@ var runOptimization; /* hoisted â€” defined fully below after IIFE */
   }, 300);
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { init(); });
+    document.addEventListener('DOMContentLoaded', function() { init(); initLiveRiskFreeRate(); });
   } else {
     init();
+    initLiveRiskFreeRate();
   }
 })();
 
@@ -1262,6 +1291,7 @@ function drawFrontier(pts, data, rfr) {
   var canvas = document.getElementById('frontier-canvas');
   var tooltip = document.getElementById('frontier-tooltip');
   var wrap = document.getElementById('frontier-wrap');
+  var mcCloud = data && data.mc_cloud ? data.mc_cloud : [];
   if (!canvas || !tooltip || !wrap || !pts || !pts.length) return;
   if (!rfr) rfr = 0.02;
 
@@ -1292,6 +1322,10 @@ function drawFrontier(pts, data, rfr) {
 
   var allVols = pts.map(function(p) { return p.vol; }).concat([ms.vol, mv.vol, mr.vol]);
   var allRets = pts.map(function(p) { return p.ret; }).concat([ms.ret, mv.ret, mr.ret, rfr]);
+  if (mcCloud && mcCloud.length) {
+    allVols = allVols.concat(mcCloud.map(function(p) { return p.vol; }));
+    allRets = allRets.concat(mcCloud.map(function(p) { return p.ret; }));
+  }
   if (eq && eq.vol && eq.ret) {
     allVols.push(eq.vol);
     allRets.push(eq.ret);
@@ -1378,7 +1412,9 @@ function drawFrontier(pts, data, rfr) {
     var boxX = padL + 8;
     var boxY = padT + 8;
     var boxW = 150;
-    var boxH = markers.length > 3 ? 96 : 78;
+    var extraRows = markers.length > 3 ? 1 : 0;
+    if (mcCloud.length > 0) extraRows += 1;
+    var boxH = 78 + extraRows * 18;
 
     ctx.fillStyle = 'rgba(255,255,255,0.93)';
     ctx.strokeStyle = '#ddd';
@@ -1423,6 +1459,13 @@ function drawFrontier(pts, data, rfr) {
         ctx.lineTo(ix + 6, iy);
         ctx.stroke();
         ctx.restore();
+      } else if (shape === 'dot') {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(ix, iy, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
 
       ctx.fillStyle = '#444';
@@ -1436,6 +1479,7 @@ function drawFrontier(pts, data, rfr) {
     legendItem('#d62728', 'triangle', 'Max Return', 2);
     if (markers.length > 3) legendItem('#9467bd', 'diamond', 'Equal Weight', 3);
     legendItem('#4aaa88', 'line', 'Capital Mkt Line', markers.length > 3 ? 4 : 3);
+    if (mcCloud.length > 0) legendItem('#3a7dd0', 'dot', 'MC Simulations', markers.length > 3 ? 5 : 4);
   }
 
   function redraw(activeKey) {
@@ -1503,6 +1547,44 @@ function drawFrontier(pts, data, rfr) {
     ctx.lineTo(xp(cmlEndVol), yp(cmlEndRet));
     ctx.stroke();
     ctx.restore();
+
+    if (mcCloud.length > 0) {
+      var srMin = mcCloud[0].sr;
+      var srMax = mcCloud[0].sr;
+      for (var si = 1; si < mcCloud.length; si++) {
+        if (mcCloud[si].sr < srMin) srMin = mcCloud[si].sr;
+        if (mcCloud[si].sr > srMax) srMax = mcCloud[si].sr;
+      }
+      var srRange = srMax - srMin || 1;
+
+      for (var mci = 0; mci < mcCloud.length; mci++) {
+        var mp = mcCloud[mci];
+        var mpx = xp(mp.vol);
+        var mpy = yp(mp.ret);
+        if (mpx < padL || mpx > W - padR || mpy < padT || mpy > H - padB) continue;
+
+        var t = (mp.sr - srMin) / srRange;
+        var r;
+        var g;
+        var b;
+        if (t < 0.5) {
+          var u1 = t * 2;
+          r = Math.round(170 + (58 - 170) * u1);
+          g = Math.round(170 + (125 - 170) * u1);
+          b = Math.round(170 + (208 - 170) * u1);
+        } else {
+          var u2 = (t - 0.5) * 2;
+          r = Math.round(58 + (90 - 58) * u2);
+          g = Math.round(125 + (138 - 125) * u2);
+          b = Math.round(208 + (0 - 208) * u2);
+        }
+
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.28)';
+        ctx.beginPath();
+        ctx.arc(mpx, mpy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
     var grad = ctx.createLinearGradient(0, padT, 0, H - padB);
     grad.addColorStop(0, 'rgba(58,125,208,0.12)');
