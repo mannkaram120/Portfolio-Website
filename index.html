@@ -6,6 +6,7 @@
 <title>Karamjeet Singh - Finance | Risk | Portfolio Analytics</title>
 <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/>
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Bebas+Neue&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -84,7 +85,7 @@
   .tab.active { color:#5a8a00; border-bottom-color:#5a8a00; }
   .tab:hover { color:#333; }
 
-  #frontier-canvas { background:#f8f8f4; width:100%; border:1px solid #e0e0e0; }
+  #frontier-canvas { background:#111111; width:100%; border:1px solid #222222; }
 
   .chip { padding:4px 12px; font-family:"JetBrains Mono",monospace; font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border:1.5px solid #ccc; background:transparent; color:#666; transition:.15s; }
   .chip:hover { border-color:#5a8a00; color:#5a8a00; }
@@ -93,6 +94,212 @@
   .metric-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; }
   .metric-row:last-child { border-bottom:none; }
   .metric-label { font-family:"JetBrains Mono",monospace; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:#666; }
+  .info-tip {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;
+    height:16px;
+    margin-left:6px;
+    border:1px solid #cfcfc7;
+    border-radius:50%;
+    color:#666;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.6rem;
+    line-height:1;
+    cursor:help;
+    vertical-align:middle;
+  }
+  .stress-split {
+    display:grid;
+    grid-template-columns:minmax(0, 1.2fr) minmax(300px, .8fr);
+    gap:14px;
+    align-items:start;
+  }
+  .stress-split > div {
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    min-height:0;
+    min-width:0;
+    overflow:hidden;
+  }
+  .stress-side-stack {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    height:100%;
+  }
+  .stress-metric-stack {
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .stress-drawdown-toggle summary {
+    padding:12px 14px;
+    cursor:pointer;
+    color:#d4d4cc;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.72rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .stress-drawdown-toggle[open] summary {
+    border-bottom:1px solid #222;
+  }
+  .results-toggle summary {
+    cursor:pointer;
+    list-style:none;
+  }
+  .results-toggle summary::-webkit-details-marker,
+  .stress-drawdown-toggle summary::-webkit-details-marker {
+    display:none;
+  }
+  .results-toggle summary::before,
+  .stress-drawdown-toggle summary::before {
+    content:'\25B8';
+    display:inline-block;
+    margin-right:8px;
+    color:#666;
+    transition:transform .15s ease;
+  }
+  .results-toggle[open] summary::before,
+  .stress-drawdown-toggle[open] summary::before {
+    transform:rotate(90deg);
+  }
+  .results-toggle .results-toggle-head {
+    display:inline-flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:0;
+    color:#666;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.62rem;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .results-toggle .results-toggle-body {
+    padding-top:12px;
+  }
+  .correlation-layout {
+    display:grid;
+    grid-template-columns:minmax(0, 1.2fr) minmax(240px, .8fr);
+    gap:14px;
+    align-items:start;
+  }
+  .corr-compare-toggle {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+    padding:9px 12px;
+    border:1px solid #d9d9d1;
+    background:#f8f8f4;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.7rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#555;
+    cursor:pointer;
+  }
+  .corr-compare-toggle:hover,
+  .corr-compare-toggle.active {
+    border-color:#5a8a00;
+    color:#5a8a00;
+    background:#f3f7e8;
+  }
+  .corr-compare-panel {
+    display:none;
+    margin-top:14px;
+    border:1px solid #e8e8e0;
+    background:#f8f8f4;
+  }
+  .corr-compare-panel.open { display:block; }
+  .corr-tabs {
+    display:flex;
+    gap:0;
+    border-bottom:1px solid #e8e8e0;
+    padding:0 12px;
+  }
+  .corr-tab-btn {
+    padding:12px 14px;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.68rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#777;
+    border:none;
+    background:none;
+    border-bottom:2px solid transparent;
+    cursor:pointer;
+  }
+  .corr-tab-btn.active {
+    color:#5a8a00;
+    border-bottom-color:#5a8a00;
+  }
+  .corr-tab-pane { display:none; padding:14px; }
+  .corr-tab-pane.active { display:block; }
+  .corr-heatmap-compare {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px;
+  }
+  .corr-compare-card {
+    background:#111;
+    border:1px solid #222;
+    padding:12px;
+  }
+  .corr-compare-table {
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border:1px solid #e8e8e0;
+  }
+  .corr-compare-table th,
+  .corr-compare-table td {
+    padding:10px 12px;
+    border-bottom:1px solid #e8e8e0;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.74rem;
+  }
+  .corr-compare-table th {
+    font-size:.64rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#666;
+    text-align:left;
+    background:#f8f8f4;
+  }
+  .corr-compare-table td { color:#333; }
+  .corr-compare-kpis {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-top:12px;
+  }
+  .frontier-layout {
+    display:grid;
+    grid-template-columns:minmax(0, 1.55fr) minmax(320px, .9fr);
+    gap:14px;
+    align-items:start;
+  }
+  .frontier-ew-grid { display:grid; grid-template-columns:65% 35%; gap:16px; align-items:start; margin-bottom:14px; }
+  .ew-metrics-panel { border:1px solid #e8e8e0; background:#fafaf6; padding:16px; }
+  .ew-metric-row { padding:10px 0; border-bottom:1px solid #f0f0ea; }
+  .ew-metric-row:last-child { border-bottom:none; }
+  .ew-metric-label { font-family:JetBrains Mono,monospace; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:#888; margin-bottom:6px; }
+  .ew-metric-values { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .ew-val-ew { font-family:JetBrains Mono,monospace; font-size:.8rem; color:#aaa; }
+  .ew-val-opt { font-family:JetBrains Mono,monospace; font-size:.8rem; font-weight:700; color:#5a8a00; }
+  .ew-val-delta { font-family:JetBrains Mono,monospace; font-size:.7rem; }
+  .frontier-sidecard {
+    background:#fafaf6;
+    border:1px solid #e8e8e0;
+    padding:18px 18px 16px;
+  }
   .metric-value { font-family:"JetBrains Mono",monospace; font-size:.92rem; font-weight:700; color:#1a1a1a; }
   .metric-value.good { color:#3a7000; }
   .metric-value.warn { color:#b45309; }
@@ -119,6 +326,174 @@
 
   .page { display:none; }
   .page.active { display:block; }
+
+  .results-dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .results-dashboard .results-metrics { grid-area: metrics; }
+  .results-dashboard .results-allocation { grid-area: allocation; }
+  .results-dashboard .results-frontier { grid-area: frontier; }
+  .results-dashboard .results-correlation { grid-area: correlation; }
+  .results-dashboard .results-stress { grid-area: stress; }
+  .results-dashboard .results-comparison { grid-area: comparison; }
+
+  @media (min-width: 1025px) {
+    .results-dashboard {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        "metrics allocation"
+        "frontier frontier"
+        "correlation correlation"
+        "stress stress";
+      align-items: start;
+    }
+    .results-dashboard .results-metrics,
+    .results-dashboard .results-allocation {
+      height: 100%;
+    }
+  }
+
+  .analysis-tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e8e8e0;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 56px;
+    z-index: 50;
+    background: #f5f5f0;
+    padding-top: 4px;
+  }
+  .analysis-tab-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    color: #888;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .analysis-tab-btn:hover { color: #333; }
+  .analysis-tab-btn.active {
+    color: #5a8a00;
+    border-bottom-color: #5a8a00;
+  }
+  .analysis-tab-pane { display: none; }
+  .analysis-tab-pane.active { display: block; }
+
+  .view-input-table { width:100%; border-collapse:collapse; }
+  .view-input-table th { padding:8px 10px; font-family:"JetBrains Mono",monospace; font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:#666; text-align:left; border-bottom:1px solid #e8e8e0; background:#f8f8f4; }
+  .view-input-table td { padding:8px 10px; border-bottom:1px solid #f0f0ea; vertical-align:middle; }
+  .view-return-input { width:80px; padding:5px 8px; font-family:"JetBrains Mono",monospace; font-size:.8rem; border:1.5px solid #ccc; background:#fafafa; text-align:right; }
+  .view-return-input:focus { border-color:#5a8a00; outline:none; }
+  .view-conf-slider { width:100px; }
+  .view-status-badge { font-family:"JetBrains Mono",monospace; font-size:.64rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 8px; }
+  .view-type-btn { transition: background .15s, border-color .15s, color .15s; }
+  .view-type-btn:hover { border-color: #5a8a00; color: #5a8a00; }
+  .rel-content { display: none; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .view-short-select { font-family:"JetBrains Mono",monospace; font-size:.72rem; padding:2px 6px; border:1.5px solid #ccc; background:#fafafa; color:#333; transition:border-color .15s; }
+  .view-short-select:focus { border-color:#5a8a00; outline:none; }
+
+  .bl-metrics-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .comparison-diverge-bar { display:flex; align-items:center; gap:8px; }
+  .stress-test-grid-table { width:100%; border-collapse:collapse; }
+  .stress-test-grid-table th, .stress-test-grid-table td { padding:10px 12px; border:1px solid #e8e8e0; font-family:"JetBrains Mono",monospace; font-size:.74rem; text-align:center; }
+  .stress-test-grid-table th { background:#f8f8f4; font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:#666; }
+  .t3-grid { display:grid; gap:14px; }
+  .t3-row1 { grid-template-columns:1fr 1fr; }
+  .t3-row2 { grid-template-columns:1fr 1fr; align-items:start; }
+  .t3-right-stack { display:flex; flex-direction:column; gap:14px; }
+
+
+    }
+    .correlation-layout {
+      grid-template-columns:minmax(0, 1fr);
+    }
+    .corr-heatmap-compare,
+    .corr-compare-kpis {
+      grid-template-columns:minmax(0, 1fr);
+    }
+    .frontier-layout {
+      grid-template-columns:minmax(0, 1fr);
+    }
+  }
+
+  .portfolio-shell {
+    display: grid !important;
+    grid-template-columns: 260px minmax(0, 1fr) !important;
+    gap: 28px !important;
+    align-items: start !important;
+  }
+  .portfolio-sidebar {
+    position: sticky !important;
+    top: 76px !important;
+    padding-right: 16px !important;
+    border-right: 1px solid #d9d9d1 !important;
+    height: calc(100vh - 92px) !important;
+    max-height: calc(100vh - 92px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .portfolio-sidebar-brand {
+    padding-bottom: 22px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #d9d9d1;
+  }
+  .sidebar-brand { cursor: pointer; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #d9d9d1; }
+  .brand-eyebrow { font-family: 'JetBrains Mono', monospace; font-size:.58rem; letter-spacing:.14em; color:#5a8a00; text-transform:uppercase; margin-bottom:4px; }
+  .brand-title { font-family: 'Bebas Neue', sans-serif; font-size:2rem; font-weight:900; line-height:.95; letter-spacing:.02em; color:#111; }
+  .brand-outline { font-family: 'Bebas Neue', sans-serif; font-size:2rem; font-weight:900; line-height:.95; letter-spacing:.02em; color:transparent; -webkit-text-stroke:1.5px #bbb; margin-bottom:4px; }
+  .brand-sub { font-family: 'JetBrains Mono', monospace; font-size:.62rem; color:#999; margin-top:6px; }
+  .section-head { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #d9d9d1; cursor:pointer; user-select:none; margin-bottom:0; }
+  .section-head:hover { background: rgba(0,0,0,.02); }
+  .section-arrow { font-size:.7rem; color:#999; transition:transform .2s; display:inline-block; }
+  .section-arrow.closed { transform: rotate(-90deg); }
+  .section-body { overflow:hidden; max-height:600px; transition:max-height .25s ease, padding .25s ease; padding-bottom:14px; }
+  .section-body.collapsed { max-height:0 !important; padding-top:0 !important; padding-bottom:0 !important; }
+  .portfolio-sidebar-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0;
+  }
+  .portfolio-flat-box {
+    background: transparent;
+  }
+  .portfolio-flat-box .portfolio-box-head {
+    margin-bottom: 16px;
+  }
+  .portfolio-flat-box .portfolio-box-head .font-mono {
+    color: #666;
+  }
+  .portfolio-workspace {
+    min-width: 0;
+    background: #f5f5f0;
+    position: relative;
+    z-index: 1;
+  }
+  .portfolio-read-note {
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    border-left: 2px solid #888;
+    background: rgba(255,255,255,0.6);
+    color: #555;
+    font-size: .92rem;
+    line-height: 1.8;
+  }
+  .portfolio-read-note strong {
+    color: #111;
+  }
 
   /* Contact form */
   .contact-input {
@@ -166,13 +541,10 @@
     }
 
     /* Portfolio section */
-    #page-portfolio > div[style*="padding:64px 48px"] { padding: 70px 16px 40px !important; }
-    #page-portfolio > div > div[style*="grid-template-columns:1fr 1.5fr"] {
-      grid-template-columns: 1fr !important; gap: 20px !important;
-    }
-
-    /* Portfolio tool: stack on mobile */
-    .portfolio-grid { grid-template-columns: 1fr !important; }
+    #page-portfolio > div[style*="max-width:1540px"] { padding: 70px 16px 40px !important; }
+    .portfolio-shell { grid-template-columns: 1fr !important; gap: 24px !important; }
+    .portfolio-sidebar { position: static !important; padding-right: 0 !important; border-right: none !important; }
+    .portfolio-sidebar-brand { margin-bottom: 18px !important; }
 
     /* Comparison card: 4-col â†’ 2-col on mobile */
     .comparison-grid { grid-template-columns: 1fr 1fr !important; }
@@ -231,11 +603,13 @@
     nav { padding: 0 28px !important; }
     section[style*="padding:80px 48px"] { padding: 80px 32px !important; }
     #about-section { padding: 60px 32px !important; }
-    #page-portfolio > div[style*="padding:64px 48px"] { padding: 70px 32px 40px !important; }
+    #page-portfolio > div[style*="max-width:1540px"] { padding: 70px 32px 40px !important; }
     #contact-section { padding: 60px 32px !important; }
     footer > div[style*="padding:64px 48px"] { padding: 40px 32px !important; }
     .hero-grid { gap: 40px !important; }
     #about-section > div[style*="grid-template-columns:1fr 1fr"] { gap: 36px !important; }
+    .portfolio-shell { grid-template-columns: 250px minmax(0,1fr) !important; gap: 20px !important; }
+    .portfolio-sidebar { padding-right: 16px !important; }
   }
 
 </style>
@@ -647,105 +1021,151 @@
 </div>
 
 <!-- â•â•â•â•â•â•â•â•â•â• PORTFOLIO PAGE â•â•â•â•â•â•â•â•â•â• -->
+<style id="portfolio-override">
+  #page-portfolio .portfolio-shell {
+    display: grid !important;
+    grid-template-columns: 260px minmax(0, 1fr) !important;
+    gap: 28px !important;
+    align-items: start !important;
+  }
+  #page-portfolio .portfolio-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    position: sticky !important;
+    top: 76px !important;
+    height: calc(100vh - 92px) !important;
+    max-height: calc(100vh - 92px) !important;
+    overflow-y: auto !important;
+    padding-right: 16px !important;
+    border-right: 1px solid #d9d9d1 !important;
+    width: 260px !important;
+    box-sizing: border-box !important;
+  }
+  #page-portfolio .portfolio-sidebar-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  #page-portfolio .portfolio-workspace {
+    display: block !important;
+    min-width: 0 !important;
+  }
+  @media (max-width: 768px) {
+    #page-portfolio .portfolio-shell { grid-template-columns: 1fr !important; }
+    #page-portfolio .portfolio-sidebar { width: 100% !important; position: static !important; height: auto !important; max-height: none !important; border-right: none !important; padding-right: 0 !important; }
+  }
+</style>
 <div class="page" id="page-portfolio" style="padding-top:56px">
-  <div style="padding:64px 48px;max-width:1200px;margin:0 auto;position:relative;z-index:10">
+  <div style="padding:24px 32px 40px;max-width:1540px;margin:0 auto;position:relative;z-index:10">
+    <div class="portfolio-shell" style="display:grid!important;grid-template-columns:260px minmax(0,1fr)!important;gap:28px!important;align-items:start!important">
 
-    <div style="margin-bottom:40px">
-      <div class="font-mono text-xs tracking-widest uppercase mb-2 flex items-center gap-2" style="color:#5a8a00">
-        <span style="opacity:.5">//</span> Quantitative Finance Tool
-      </div>
-      <h2 class="font-display leading-none mb-4" style="font-size:clamp(3rem,8vw,6rem);letter-spacing:.04em;color:#111">
-        PORTFOLIO <span style="-webkit-text-stroke:1px #ccc;color:transparent">OPTIMIZER</span>
-      </h2>
-      <p class="font-mono text-xs tracking-widest" style="color:#666;max-width:560px">
-        Real market data via yFinance
-      </p>
-    </div>
-
-    <div class="portfolio-grid" style="display:grid;grid-template-columns:1fr 1.5fr;gap:28px;align-items:start">
-
-      <!-- LEFT INPUTS -->
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="neo-box">
-          <div style="padding:16px 20px;border-bottom:1px solid #eee">
-            <div class="font-mono text-xs font-bold tracking-widest uppercase" style="color:#666">// Asset Selection</div>
-          </div>
-          <div style="padding:20px">
-            <div style="margin-bottom:16px">
-              <label>Stock Tickers <span class="label-hint">type &amp; press Enter</span></label>
-              <div class="tag-input-wrap" id="tag-wrap">
-                <input class="tag-input" id="ticker-input" placeholder="e.g. TSLA..."/>
-              </div>
-            </div>
-            <div>
-              <label>Quick Add</label>
-              <div style="display:flex;flex-wrap:wrap;gap:6px" id="quick-chips">
-                <div class="chip" data-ticker="NVDA">NVDA</div>
-                <div class="chip" data-ticker="META">META</div>
-                <div class="chip" data-ticker="AMZN">AMZN</div>
-                <div class="chip" data-ticker="TSLA">TSLA</div>
-                <div class="chip" data-ticker="JPM">JPM</div>
-                <div class="chip" data-ticker="V">V</div>
-                <div class="chip" data-ticker="BRK.B">BRK.B</div>
-                <div class="chip" data-ticker="NFLX">NFLX</div>
-              </div>
-            </div>
+      <aside class="portfolio-sidebar" style="display:flex!important;flex-direction:column!important;position:sticky!important;top:76px!important;height:calc(100vh - 92px)!important;max-height:calc(100vh - 92px)!important;overflow-y:auto!important;padding-right:16px!important;border-right:1px solid #d9d9d1!important;width:260px!important;box-sizing:border-box!important;flex-shrink:0!important">
+        <div class="sidebar-brand" onclick="toggleSection('brand')">
+          <div class="brand-eyebrow">// Quantitative Finance Tool</div>
+          <div class="brand-title">PORTFOLIO</div>
+          <div class="brand-outline">OPTIMIZER</div>
+          <div class="section-body" id="body-brand">
+            <div class="brand-sub">Real market data via yFinance</div>
           </div>
         </div>
 
-        <div class="neo-box">
-          <div style="padding:16px 20px;border-bottom:1px solid #eee">
-            <div class="font-mono text-xs font-bold tracking-widest uppercase" style="color:#666">// Parameters</div>
-          </div>
-          <div style="padding:20px;display:flex;flex-direction:column;gap:18px">
-            <div>
-              <label>Time Horizon</label>
-              <div style="display:flex;flex-wrap:wrap;gap:6px" id="time-chips">
-                <div class="chip" data-days="90">3M</div>
-                <div class="chip" data-days="180">6M</div>
-                <div class="chip selected" data-days="365">1Y</div>
-                <div class="chip" data-days="1825">5Y</div>
-                <div class="chip" data-days="3650">10Y</div>
+        <div class="portfolio-sidebar-stack" style="flex:1">
+          <div class="portfolio-flat-box">
+            <div class="section-head" onclick="toggleSection('assets')">
+              <div class="font-mono text-xs font-bold tracking-widest uppercase" style="color:#666">// Asset Selection</div>
+              <span class="section-arrow" id="arrow-assets">▾</span>
+            </div>
+            <div class="section-body" id="body-assets" style="padding-top:14px">
+              <div style="margin-bottom:16px">
+                <label>Stock Tickers <span class="label-hint">type &amp; press Enter</span></label>
+                <div class="tag-input-wrap" id="tag-wrap">
+                  <input class="tag-input" id="ticker-input" placeholder="e.g. TSLA..."/>
+                </div>
+              </div>
+              <div>
+                <label>Quick Add</label>
+                <div style="display:flex;flex-wrap:wrap;gap:6px" id="quick-chips">
+                  <div class="chip" data-ticker="NVDA">NVDA</div>
+                  <div class="chip" data-ticker="META">META</div>
+                  <div class="chip" data-ticker="AMZN">AMZN</div>
+                  <div class="chip" data-ticker="TSLA">TSLA</div>
+                  <div class="chip" data-ticker="JPM">JPM</div>
+                  <div class="chip" data-ticker="V">V</div>
+                  <div class="chip" data-ticker="BRK.B">BRK.B</div>
+                  <div class="chip" data-ticker="NFLX">NFLX</div>
+                </div>
               </div>
             </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <label style="margin:0">Risk-free Rate</label>
-                <span class="font-mono text-xs font-bold" style="color:#5a8a00"><span id="rfr-display">2.00</span>% p.a.</span>
+          </div>
+
+          <div class="portfolio-flat-box">
+            <div class="section-head" onclick="toggleSection('params')">
+              <div class="font-mono text-xs font-bold tracking-widest uppercase" style="color:#666">// Parameters</div>
+              <span class="section-arrow" id="arrow-params">▾</span>
+            </div>
+            <div class="section-body" id="body-params" style="padding-top:14px">
+              <div style="display:flex;flex-direction:column;gap:18px">
+                <div>
+                  <label>Time Horizon</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px" id="time-chips">
+                    <div class="chip" data-days="90">3M</div>
+                    <div class="chip" data-days="180">6M</div>
+                    <div class="chip selected" data-days="365">1Y</div>
+                    <div class="chip" data-days="1825">5Y</div>
+                    <div class="chip" data-days="3650">10Y</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <label style="margin:0">Risk-free Rate<span id="rfr-live-info" class="info-tip" title="Uses the current 1-year Treasury yield as the default when available. You can still override it with the slider.">i</span></label>
+                    <span class="font-mono text-xs font-bold" style="color:#5a8a00"><span id="rfr-display">2.00</span>% p.a.</span>
+                  </div>
+                  <input type="range" id="rfr-slider" min="-5" max="20" step="0.01" value="2"/>
+                  <div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:.7rem;color:#888;margin-top:4px"><span>-5%</span><span>20%</span></div>
+                </div>
+                <div>
+                  <label>Return Frequency</label>
+                  <select id="frequency">
+                    <option value="252">Daily (252 trading days)</option>
+                    <option value="52">Weekly (52 weeks)</option>
+                    <option value="12">Monthly (12 months)</option>
+                  </select>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <label style="margin:0">Allow Short Selling</label>
+                  <label class="toggle"><input type="checkbox" id="short-toggle"/><span class="toggle-slider"></span></label>
+                </div>
               </div>
-              <input type="range" id="rfr-slider" min="-5" max="20" step="0.01" value="2"/>
-              <div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:.7rem;color:#888;margin-top:4px"><span>-5%</span><span>20%</span></div>
-              <div id="rfr-live-note" style="margin-top:8px;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.04em;color:#777">Default uses current 1-year Treasury when available.</div>
-            </div>
-            <div>
-              <label>Return Frequency</label>
-              <select id="frequency">
-                <option value="252">Daily (252 trading days)</option>
-                <option value="52">Weekly (52 weeks)</option>
-                <option value="12">Monthly (12 months)</option>
-              </select>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <label style="margin:0">Allow Short Selling</label>
-              <label class="toggle"><input type="checkbox" id="short-toggle"/><span class="toggle-slider"></span></label>
             </div>
           </div>
-        </div>
 
-        <button id="optimize-btn"
-          onclick="runOptimization()"
-          style="width:100%;font-family:JetBrains Mono,monospace;font-weight:900;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;padding:15px;background:#111;color:#c8f135;border:2px solid #111;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;cursor:pointer">
-          OPTIMIZE PORTFOLIO
-        </button>
-      </div>
-
-      <!-- RIGHT RESULTS -->
-      <div id="results-panel">
-        <div class="neo-box" style="padding:48px;text-align:center">
-          <div style="font-size:2.5rem;margin-bottom:12px;opacity:.2">-</div>
-          <p class="font-mono text-xs tracking-widest uppercase" style="color:#888">Configure assets and click optimize</p>
+          <button id="optimize-btn"
+            onclick="runOptimization()"
+            style="width:100%;font-family:JetBrains Mono,monospace;font-weight:900;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;padding:15px;background:#111;color:#c8f135;border:2px solid #111;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;cursor:pointer;margin-top:auto">
+            OPTIMIZE PORTFOLIO
+          </button>
         </div>
-      </div>
+      </aside>
+
+      <section class="portfolio-workspace" style="display:block!important;min-width:0!important;flex:1!important">
+        <div id="results-panel">
+          <div class="neo-box" style="padding:48px;text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px;opacity:.2">-</div>
+            <p class="font-mono text-xs tracking-widest uppercase" style="color:#888">Configure assets and click optimize</p>
+          </div>
+        </div>
+        <div id="analysis-tabs" style="display:none">
+          <div class="analysis-tab-nav">
+            <button class="analysis-tab-btn active" data-tab="mvo">// MVO BASELINE</button>
+            <button class="analysis-tab-btn" data-tab="enhanced">// ENHANCED MODEL</button>
+            <button class="analysis-tab-btn" data-tab="comparison">// COMPARISON</button>
+          </div>
+          <div id="tab-mvo" class="analysis-tab-pane active"></div>
+          <div id="tab-enhanced" class="analysis-tab-pane" style="display:none"></div>
+          <div id="tab-comparison" class="analysis-tab-pane" style="display:none"></div>
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -878,7 +1298,7 @@ setTimeout(() => {
 
 
 /* Portfolio Controls - pure ES5, no arrow functions, no template literals */
-var API_URL = 'https://mean-variance-app-5are.onrender.com';
+var API_URL = (window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') ? 'http://127.0.0.1:5000' : 'https://mean-variance-app-5are.onrender.com';
 var runOptimization; /* hoisted â€” defined fully below after IIFE */
 (function() {
   var activeTickers = [];
@@ -1022,7 +1442,7 @@ var runOptimization; /* hoisted â€” defined fully below after IIFE */
 
   function initLiveRiskFreeRate() {
     var slider = document.getElementById('rfr-slider');
-    var note = document.getElementById('rfr-live-note');
+    var note = document.getElementById('rfr-live-info');
     if (!slider || !API_URL || slider.getAttribute('data-live-loaded') === '1') return;
 
     fetch(API_URL + '/risk-free-rate')
@@ -1035,14 +1455,14 @@ var runOptimization; /* hoisted â€” defined fully below after IIFE */
         slider.value = Math.max(-5, Math.min(20, data.rate_percent)).toFixed(2);
         slider.setAttribute('data-live-loaded', '1');
         if (note) {
-          note.textContent = 'Live 1-year Treasury default: ' + data.rate_percent.toFixed(2) + '%'
-            + (data.as_of ? ' as of ' + data.as_of : '') + '.';
+          note.title = 'Live 1-year Treasury default: ' + data.rate_percent.toFixed(2) + '%'
+            + (data.as_of ? ' as of ' + data.as_of : '') + '. You can still override it with the slider.';
         }
         updateSlider();
       })
       .catch(function() {
         slider.setAttribute('data-live-loaded', '1');
-        if (note) note.textContent = 'Default uses current 1-year Treasury when available.';
+        if (note) note.title = 'Uses the current 1-year Treasury yield as the default when available. You can still override it with the slider.';
         updateSlider();
       });
   }
@@ -1081,6 +1501,25 @@ var runOptimization; /* hoisted â€” defined fully below after IIFE */
   }
 })();
 
+// Pre-warm cache with default tickers so first real request is instant
+if (typeof API_URL !== 'undefined' && API_URL) {
+  window.addEventListener('load', function() {
+    fetch(API_URL + '/optimize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tickers: ['AAPL', 'MSFT', 'GOOG'], days: 365, risk_free_rate: 0.0366, frequency: 252, allow_short: false })
+    }).catch(function() {});
+  });
+}
+
+function toggleSection(id) {
+  var body = document.getElementById('body-' + id);
+  var arrow = document.getElementById('arrow-' + id);
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('closed');
+}
+
 function runOptimization() {
   var tickers = window._getActiveTickers ? window._getActiveTickers() : [];
   if (tickers.length < 2) {
@@ -1097,15 +1536,29 @@ function runOptimization() {
   var short = window._isShortAllowed   ? window._isShortAllowed()   : false;
 
   if (API_URL) {
-    btn.innerHTML = '<div class="spinner"></div> Waking up server...';
-    panel.innerHTML = '<div style="padding:20px;background:#f0f7e6;border:1.5px solid #5a8a00;color:#3a6000;font-size:.88rem"><strong>Connecting to server...</strong><br><span id="status-msg">First request may take 30-60s (free tier)</span><div style="margin-top:12px;background:#d0e8b0;height:4px"><div id="progress-bar" style="height:100%;background:#5a8a00;width:5%;transition:width 0.5s ease"></div></div></div>';
-
-    var prog = 5;
+    btn.innerHTML = '<div class="spinner"></div> Optimizing...';
+    document.getElementById('results-panel').style.display = 'block';
+    document.getElementById('analysis-tabs').style.display = 'none';
+    var _stages = [
+      { pct: 10,  label: '⟳ Fetching live market data...' },
+      { pct: 40,  label: '⟳ Running optimization...' },
+      { pct: 75,  label: '⟳ Building frontier...' }
+    ];
+    var _stageIdx = 0;
+    function _stageHtml(label, pct) {
+      return '<div style="padding:20px;background:#f0f7e6;border:1.5px solid #5a8a00;color:#3a6000;font-size:.88rem">'
+        + '<span id="status-msg" style="font-family:JetBrains Mono,monospace;font-size:.8rem">' + label + '</span>'
+        + '<div style="margin-top:12px;background:#d0e8b0;height:4px"><div id="progress-bar" style="height:100%;background:#5a8a00;width:' + pct + '%;transition:width 0.6s ease"></div></div></div>';
+    }
+    panel.innerHTML = _stageHtml(_stages[0].label, _stages[0].pct);
     var progTimer = setInterval(function() {
-      prog = Math.min(prog + 3, 85);
+      _stageIdx = Math.min(_stageIdx + 1, _stages.length - 1);
+      var s = _stages[_stageIdx];
+      var sm = document.getElementById('status-msg');
       var pb = document.getElementById('progress-bar');
-      if (pb) pb.style.width = prog + '%';
-    }, 800);
+      if (sm) sm.textContent = s.label;
+      if (pb) pb.style.width = s.pct + '%';
+    }, 1800);
 
     fetch(API_URL + '/optimize', {
       method: 'POST',
@@ -1115,7 +1568,8 @@ function runOptimization() {
         days: days,
         risk_free_rate: rfr,
         frequency: freq,
-        allow_short: short
+        allow_short: short,
+        views: (window._optimizedPortfolioState ? window._optimizedPortfolioState.views || [] : [])
       })
     })
     .then(function(res) {
@@ -1131,15 +1585,28 @@ function runOptimization() {
       return res.json();
     })
     .then(function(data) {
+      var sm = document.getElementById('status-msg');
+      var pb = document.getElementById('progress-bar');
+      if (sm) sm.textContent = '✓ Done';
+      if (pb) pb.style.width = '100%';
       btn.innerHTML = '\u26A1 OPTIMIZE PORTFOLIO';
       btn.disabled = false;
-      renderResults(data, true);
+      setTimeout(function() {
+        renderTab1(data, true);
+        try { renderTab2(data); } catch(e) { console.warn('renderTab2 error', e); }
+        try { renderTab3(data); } catch(e) { console.warn('renderTab3 error', e); }
+        document.getElementById('results-panel').style.display = 'none';
+        document.getElementById('analysis-tabs').style.display = 'block';
+        switchAnalysisTab('mvo');
+      }, 80);
     })
     .catch(function(err) {
       clearInterval(progTimer);
       btn.innerHTML = '\u26A1 OPTIMIZE PORTFOLIO';
       btn.disabled = false;
-      panel.innerHTML = '<div style="padding:16px;background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;font-size:.9rem"><strong>\u26a0 ' + err.message + '</strong></div>';
+      document.getElementById('results-panel').style.display = 'block';
+      document.getElementById('analysis-tabs').style.display = 'none';
+      document.getElementById('results-panel').innerHTML = '<div style="padding:16px;background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;font-size:.9rem"><strong>\u26a0 ' + err.message + '</strong></div>';
     });
 
   } else {
@@ -1148,7 +1615,12 @@ function runOptimization() {
       var simData = simulateOptimization(tickers, rfr, freq);
       btn.innerHTML = '\u26A1 OPTIMIZE PORTFOLIO';
       btn.disabled = false;
-      renderResults(simData, false);
+      renderTab1(simData, false);
+      try { renderTab2(simData); } catch(e) { console.warn('renderTab2 error', e); }
+      try { renderTab3(simData); } catch(e) { console.warn('renderTab3 error', e); }
+      document.getElementById('results-panel').style.display = 'none';
+      document.getElementById('analysis-tabs').style.display = 'block';
+      switchAnalysisTab('mvo');
     }, 900);
   }
 }
@@ -1175,19 +1647,64 @@ function simulateOptimization(tickers, rfr, freq) {
   }
   return {
     expected_return: ret, volatility: vol, sharpe_ratio: sr,
-    var_95: -(ret - 1.645*vol), weights: alloc, rfr: rfr,
+    var_95: -((ret/252) - 1.645*(vol/Math.sqrt(252))), var_95_label: 'Daily VaR (95%)', weights: alloc, rfr: rfr,
     max_sharpe:    { ret: ret,    vol: vol,    sr: sr },
     min_variance:  { ret: minR,   vol: minV,   sr: (minR-rfr)/minV },
     max_return:    { ret: ret*1.3, vol: vol*1.4, sr: (ret*1.3-rfr)/(vol*1.4) },
     equal_weighted:{ ret: eqRet,  vol: eqVol,  sr: (eqRet-rfr)/eqVol, weights: eqW },
+    correlation_matrix: null,
+    stress_test: null,
     frontier: frontier, simulated: true
   };
 }
 
-function renderResults(data, isLive) {
-  var panel = document.getElementById('results-panel');
-  var tickers = Object.keys(data.weights || {});
+var STRESS_TEST_SCENARIOS = [
+  '2008 Global Financial Crisis',
+  'COVID Crash',
+  '2022 Rate Hike Cycle',
+  'Dot-Com Bust'
+];
+
+function switchAnalysisTab(tabName) {
+  document.querySelectorAll('.analysis-tab-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.analysis-tab-pane').forEach(function(pane) {
+    var isActive = pane.id === 'tab-' + tabName;
+    pane.classList.toggle('active', isActive);
+    pane.style.display = isActive ? 'block' : 'none';
+  });
+}
+document.querySelectorAll('.analysis-tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    switchAnalysisTab(this.dataset.tab);
+    // Resize Plotly charts when tab becomes visible (fixes hidden-tab render width bug)
+    if (typeof Plotly !== 'undefined') {
+      setTimeout(function() {
+        var pane = document.getElementById('tab-' + btn.dataset.tab);
+        if (pane) pane.querySelectorAll('.js-plotly-plot').forEach(function(el) { Plotly.Plots.resize(el); });
+      }, 60);
+    }
+  });
+});
+
+function renderTab1(data, isLive) {
+  var panel = document.getElementById('tab-mvo');
+  var tickers = (data.tickers_used && data.tickers_used.length ? data.tickers_used.slice() : Object.keys(data.weights || {}));
   var rfr = data.rfr || (window._getRFR ? window._getRFR() : 0.02);
+
+  var prevViews = (window._optimizedPortfolioState && window._optimizedPortfolioState.views) ? window._optimizedPortfolioState.views : [];
+  window._optimizedPortfolioState = {
+    tickers: tickers.slice(),
+    weights: data.weights || {},
+    mvoData: data,
+    blData: data.bl || null,
+    blFrontier: data.bl_frontier || null,
+    lwCorr: data.lw_correlation || null,
+    lwShrinkage: data.lw_shrinkage || null,
+    views: prevViews,
+    instability: data.instability || null
+  };
 
   // Allocation bars
   var allocRows = '';
@@ -1211,6 +1728,10 @@ function renderResults(data, isLive) {
   // Equal-weighted comparison
   var eq = data.equal_weighted || {};
   var eqRet = eq.ret || 0, eqVol = eq.vol || 0, eqSr = eq.sr || 0;
+  var returnImprovement = data.expected_return - eqRet;
+  var volChange = data.volatility - eqVol;
+  var sharpeGain = data.sharpe_ratio - eqSr;
+  var improvementPctValue = sharpeGain > 0 ? (sharpeGain / Math.abs(eqSr || 0.001)) * 100 : 0;
   var retDiff = ((data.expected_return - eqRet) * 100).toFixed(2);
   var volDiff = ((data.volatility - eqVol) * 100).toFixed(2);
   var srDiff  = (data.sharpe_ratio - eqSr).toFixed(3);
@@ -1220,86 +1741,1702 @@ function renderResults(data, isLive) {
   var retColor = retDiff >= 0 ? '#16a34a' : '#dc2626';
   var volColor = volDiff <= 0 ? '#16a34a' : '#dc2626';
   var srColor  = srDiff >= 0 ? '#16a34a' : '#dc2626';
+  var returnLabel = returnImprovement > 0.20 ? 'significant' : (returnImprovement > 0.10 ? 'moderate' : 'marginal');
+  var volDirection = volChange > 0 ? 'up' : 'down';
+  var frontierInterpretation =
+    'Optimization delivered a ' + returnLabel + ' return lift of ' + (returnImprovement * 100).toFixed(2)
+    + '% versus equal weight, while volatility moved ' + volDirection + ' by ' + Math.abs(volChange * 100).toFixed(2)
+    + 'pp to ' + (data.volatility * 100).toFixed(2) + '%. Sharpe improved by ' + sharpeGain.toFixed(3) + '.';
+  var keyInsight = improvementPctValue > 50
+    ? 'Sharpe improved ' + improvementPctValue.toFixed(0) + '% - the optimizer found substantial structure in this asset universe that equal weight completely ignores.'
+    : (volChange < 0
+      ? 'Optimizer reduced volatility AND improved return - a rare simultaneous win on both dimensions.'
+      : (returnImprovement > 0.20
+        ? 'Return nearly doubled vs equal weight while Sharpe ratio improved - concentration in the right assets outperformed naive diversification significantly.'
+        : 'Modest improvement over equal weight suggests this asset universe has limited optimization potential - consider adding assets from different sectors.'));
+  var ew = data.equal_weighted || {};
+  var ms = data.max_sharpe || {};
+  var ewRet = ew.ret != null ? ew.ret : (data.expected_return * 0.82);
+  var ewVol = ew.vol != null ? ew.vol : (data.volatility * 1.1);
+  var ewSr2 = ew.sr != null ? ew.sr : ((ewRet - rfr) / ewVol);
+  var optRet = ms.ret != null ? ms.ret : data.expected_return;
+  var optVol = ms.vol != null ? ms.vol : data.volatility;
+  var optSr2 = ms.sr != null ? ms.sr : data.sharpe_ratio;
+  var srDelta = optSr2 - ewSr2;
+  var srDeltaColor = srDelta >= 0 ? '#16a34a' : '#dc2626';
+  var retDelta = optRet - ewRet;
+  var retDeltaColor = retDelta >= 0 ? '#16a34a' : '#dc2626';
+  var volDelta = optVol - ewVol;
+  var volDeltaColor = volDelta <= 0 ? '#16a34a' : '#dc2626';
 
-  panel.innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:14px">'
-
-    // â”€â”€ Metrics
-    + '<div class="neo-box" style="padding:18px 22px">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
-    + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666">// OPTIMAL PORTFOLIO</div>'
-    + badge + '</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'
-    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">EXPECTED RETURN</div><div class="metric-value good" style="font-size:1.4rem">' + (data.expected_return*100).toFixed(2) + '%</div></div>'
-    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">VOLATILITY</div><div class="metric-value" style="font-size:1.4rem">' + (data.volatility*100).toFixed(2) + '%</div></div>'
-    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">SHARPE RATIO</div><div class="metric-value ' + srClass + '" style="font-size:1.4rem">' + sr + '</div></div>'
-    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">VAR (95%)</div><div class="metric-value warn" style="font-size:1.4rem">' + (Math.abs(data.var_95)*100).toFixed(2) + '%</div></div>'
-    + '</div></div>'
-
-    // â”€â”€ Allocation
-    + '<div class="neo-box" style="padding:18px 22px">'
-    + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// ALLOCATION</div>'
-    + allocRows + '</div>'
-
-    // â”€â”€ Efficient Frontier chart
-    + '<div class="neo-box" style="padding:18px 22px">'
-    + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// EFFICIENT FRONTIER</div>'
-    + '<div id="frontier-wrap" style="position:relative">'
-    + '<canvas id="frontier-canvas" style="width:100%;height:320px;display:block"></canvas>'
-    + '<div id="frontier-tooltip" style="position:absolute;display:none;pointer-events:none;z-index:3;min-width:160px;padding:10px 12px;background:rgba(255,255,255,0.96);border:1px solid #d8d8d0;box-shadow:0 8px 22px rgba(0,0,0,.08)"></div>'
+  var ewMetricsPanel =
+    '<div class="ew-metrics-panel">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:14px">// EQUAL WEIGHTED VS OPTIMIZED</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
+    + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">RETURN</div>'
+    + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + (ewRet*100).toFixed(2) + '% \u2192 ' + (optRet*100).toFixed(2) + '%</div>'
+    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + retDeltaColor + '">' + (retDelta>=0?'+':'') + (retDelta*100).toFixed(2) + '%</div>'
     + '</div>'
+    + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
+    + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">VOLATILITY</div>'
+    + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + (ewVol*100).toFixed(2) + '% \u2192 ' + (optVol*100).toFixed(2) + '%</div>'
+    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + volDeltaColor + '">' + (volDelta>=0?'+':'') + (volDelta*100).toFixed(2) + '%</div>'
     + '</div>'
+    + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
+    + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">SHARPE</div>'
+    + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + ewSr2.toFixed(3) + ' \u2192 ' + optSr2.toFixed(3) + '</div>'
+    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + srDeltaColor + '">' + (srDelta>=0?'+':'') + srDelta.toFixed(3) + '</div>'
+    + '</div>'
+    + '<div style="padding:10px 12px;background:#111;border:1px solid #111;text-align:center">'
+    + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">IMPROVEMENT</div>'
+    + '<div style="font-size:.72rem;color:#888;margin-bottom:3px">Sharpe ratio gain</div>'
+    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:#c8f135">' + (srDelta>=0?'+':'') + (srDelta/Math.max(Math.abs(ewSr2),0.001)*100).toFixed(1) + '%</div>'
+    + '</div>'
+    + '<div style="margin-top:12px;padding:10px 14px;background:#f3f3ee;border-left:3px solid #5a8a00">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:5px">✦ Quick Take</div>'
+    + '<div style="font-size:.75rem;line-height:1.6;color:#555">' + keyInsight + '</div>'
+    + '</div>'
+    + '</div>';
 
-    // â”€â”€ Equal-Weighted Comparison Card
-    + '<div class="neo-box" style="padding:18px 22px;background:#fafaf6">'
+  var comparisonHtml =
+    '<div class="frontier-sidecard">'
     + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:14px">// EQUAL WEIGHTED vs OPTIMIZED</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">'
-
     + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
     + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">RETURN</div>'
     + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + (eqRet*100).toFixed(2) + '% <span style="color:#aaa">\u2192</span> ' + (data.expected_return*100).toFixed(2) + '%</div>'
     + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + retColor + '">' + retSign + retDiff + '%</div>'
     + '</div>'
-
     + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
     + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">VOLATILITY</div>'
     + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + (eqVol*100).toFixed(2) + '% \u2192 ' + (data.volatility*100).toFixed(2) + '%</div>'
     + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + volColor + '">' + volSign + volDiff + '%</div>'
     + '</div>'
-
     + '<div style="padding:10px 12px;background:#fff;border:1px solid #e8e8e0;text-align:center">'
     + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">SHARPE</div>'
     + '<div style="font-size:.78rem;color:#555;margin-bottom:3px">' + eqSr.toFixed(3) + ' \u2192 ' + sr + '</div>'
     + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + srColor + '">' + srSign + srDiff + '</div>'
     + '</div>'
-
     + '<div style="padding:10px 12px;background:#111;border:1px solid #111;text-align:center">'
     + '<div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px">IMPROVEMENT</div>'
     + '<div style="font-size:.72rem;color:#888;margin-bottom:3px">Sharpe ratio gain</div>'
-    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:#c8f135">' + srSign + (srDiff > 0 ? ((parseFloat(srDiff)/Math.abs(eqSr||0.001))*100).toFixed(1) : '0.0') + '%</div>'
+    + '<div style="font-size:.9rem;font-weight:700;font-family:JetBrains Mono,monospace;color:#c8f135">' + srSign + improvementPctValue.toFixed(1) + '%</div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e8e8e0;font-size:.78rem;line-height:1.7;color:#666">' + frontierInterpretation + '</div>'
+    + '<div style="margin-top:12px;padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Quick Take</div>'
+    + '<div style="font-size:.78rem;line-height:1.65;color:#555">' + keyInsight + '</div>'
+    + '</div>'
+    + '</div>';
+
+  panel.innerHTML =
+    '<div class="results-dashboard">'
+
+    // â”€â”€ Metrics
+    + '<div class="neo-box results-metrics" style="padding:18px 22px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666">// OPTIMAL PORTFOLIO <span class="info-tip" title="The optimizer combines live market returns, covariance structure, and your selected risk-free rate to rank portfolios. Use the frontier to compare risk-return tradeoffs, the correlation matrix to see diversification overlap, and the stress test to see how the current weights would have behaved through historical crises.">i</span></div>'
+    + badge + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">EXPECTED RETURN</div><div class="metric-value good" style="font-size:1.4rem">' + (data.expected_return*100).toFixed(2) + '%</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">VOLATILITY</div><div class="metric-value" style="font-size:1.4rem">' + (data.volatility*100).toFixed(2) + '%</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">SHARPE RATIO</div><div class="metric-value ' + srClass + '" style="font-size:1.4rem">' + sr + '</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">' + (data.var_95_label || 'Daily VaR (95%)') + '</div><div class="metric-value warn" style="font-size:1.4rem">' + (Math.abs(data.var_95)*100).toFixed(2) + '%</div></div>'
+    + '</div></div>'
+
+    // â”€â”€ Allocation
+    + '<div class="neo-box results-allocation" style="padding:18px 22px">'
+    + '<div class="font-mono" style="font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// ALLOCATION</div>'
+    + allocRows + '</div>'
+
+    // â”€â”€ Efficient Frontier chart
+    + '<div class="neo-box results-frontier" style="padding:18px 22px">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// EFFICIENT FRONTIER</div></summary>'
+    + '<div class="results-toggle-body">'
+    + '<div class="frontier-ew-grid">'
+    + '<div id="frontier-wrap" style="position:relative">'
+    + '<canvas id="frontier-canvas" style="width:100%;height:480px;display:block"></canvas>'
+    + '<div id="frontier-tooltip" style="position:absolute;display:none;pointer-events:none;z-index:3;min-width:160px;padding:10px 12px;background:rgba(255,255,255,0.96);border:1px solid #d8d8d0;box-shadow:0 8px 22px rgba(0,0,0,.08)"></div>'
+    + '</div>'
+    + ewMetricsPanel
+    + '</div>'
+    + '</div>'
+    + '</details>'
     + '</div>'
 
-    + '</div></div>'
+    // Correlation Matrix
+    + '<div class="neo-box results-correlation" style="padding:18px 22px;background:#fafaf6">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// CORRELATION MATRIX</div></summary>'
+    + '<div class="results-toggle-body" id="correlation-matrix-wrap">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5a8a00;margin-bottom:8px">// SAMPLE CORRELATION — based on historical returns</div>'
+    + '<div class="correlation-layout">'
+    + '<div id="correlation-heatmap" style="width:100%;height:280px;background:#111;border:1px solid #222"></div>'
+    + '<div id="correlation-insight" style="padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555"></div>'
+    + '</div>'
+    + '<div id="corr-compare-panel" class="corr-compare-panel" style="display:none">'
+    + '<div class="corr-tabs">'
+    + '<button type="button" class="corr-tab-btn active" data-corr-tab="heatmaps">Heatmap View</button>'
+    + '<button type="button" class="corr-tab-btn" data-corr-tab="changes">What Changed</button>'
+    + '<button type="button" class="corr-tab-btn" data-corr-tab="portfolio">Portfolio Effect</button>'
+    + '</div>'
+    + '<div id="corr-tab-heatmaps" class="corr-tab-pane active"></div>'
+    + '<div id="corr-tab-changes" class="corr-tab-pane"></div>'
+    + '<div id="corr-tab-portfolio" class="corr-tab-pane"></div>'
+    + '</div>'
+    + '</div>'
+    + '</details>'
+    + '</div>'
+
+    // Stress Test
+    + '<div class="neo-box results-stress" style="padding:18px 22px;background:#fafaf6">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// STRESS TEST <span style="background:#d1fae5;color:#065f46;font-family:JetBrains Mono,monospace;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid #6ee7b7;margin-left:8px">Applying MVO Max Sharpe weights</span></div></summary>'
+    + '<div class="results-toggle-body">'
+    + '<div style="font-size:.82rem;color:#666;font-style:italic;margin-bottom:12px">Applies current optimized weights to historical crisis periods. Weights are held constant - no rebalancing assumed.</div>'
+    + '<div style="display:grid;grid-template-columns:minmax(0,320px) auto;gap:12px;align-items:center;margin-bottom:12px">'
+    + '<select id="stress-test-scenario"></select>'
+    + '<div id="stress-test-status" style="font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#3a7000"></div>'
+    + '</div>'
+    + '<div id="stress-test-context" style="display:none;margin-top:-4px;margin-bottom:12px;padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555"></div>'
+    + '<div id="stress-test-warning" style="display:none;margin-bottom:12px;padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:.84rem;line-height:1.7"></div>'
+    + '<div id="stress-test-validation" style="display:none;margin-bottom:12px;padding:12px 14px;font-size:.84rem;line-height:1.7"></div>'
+    + '<div class="stress-split">'
+    + '<div>'
+    + '<div id="stress-test-weight-table" style="margin-bottom:12px"></div>'
+    + '<div id="stress-test-chart" style="width:100%;height:420px;background:#111;border:1px solid #222"></div>'
+    + '</div>'
+    + '<div class="stress-side-stack">'
+    + '<div id="stress-test-metrics"></div>'
+    + '</div>'
+    + '</div>'
+    + '<details class="stress-drawdown-toggle" style="margin-top:12px;background:#111;border:1px solid #222">'
+    + '<summary>// DRAWDOWN DEPTH</summary>'
+    + '<div id="stress-test-drawdown-chart" style="width:100%;height:280px;background:#111"></div>'
+    + '</details>'
+    + '</div>'
+    + '</details>'
+    + '</div>'
     + '</div>';
 
   if (data.frontier && data.frontier.length > 0) {
-    drawFrontier(data.frontier, data, rfr);
+    setTimeout(function() { drawFrontier(data.frontier, data, rfr); }, 50);
+  }
+  setTimeout(function() { renderCorrelationMatrix(data); }, 100);
+  setTimeout(function() { renderStressTestSection(data, isLive); }, 150);
+}
+
+function applyViewsAndOptimize() {
+  var views = [];
+  document.querySelectorAll('.view-input-row').forEach(function(row) {
+    var rowType = row.getAttribute('data-row-type') || 'absolute';
+    var viewReturn = parseFloat(row.querySelector('.view-return-input').value) / 100;
+    var conf = parseFloat(row.querySelector('.view-conf-slider').value) / 100;
+    if (isNaN(viewReturn) || isNaN(conf)) return;
+
+    if (rowType === 'absolute') {
+      views.push({
+        type: 'absolute',
+        ticker: row.dataset.ticker,
+        view_return: viewReturn,
+        confidence: conf
+      });
+    } else if (rowType === 'relative') {
+      var shortSelect = row.querySelector('.view-short-select');
+      var shortTicker = shortSelect ? shortSelect.value : null;
+      if (!shortTicker) return;
+      views.push({
+        type: 'relative',
+        long_ticker: row.dataset.ticker,
+        short_ticker: shortTicker,
+        view_return: viewReturn,
+        confidence: conf
+      });
+    }
+  });
+  if (!window._optimizedPortfolioState) window._optimizedPortfolioState = {};
+  window._optimizedPortfolioState.views = views;
+  runOptimization();
+}
+
+function toggleViewType(rowId, allTickers) {
+  var row = document.getElementById(rowId);
+  if (!row) return;
+  var currentType = row.getAttribute('data-row-type');
+  var btn = row.querySelector('.view-type-btn');
+  var absContent = row.querySelector('.abs-content');
+  var relContent = row.querySelector('.rel-content');
+
+  if (currentType === 'absolute') {
+    row.setAttribute('data-row-type', 'relative');
+    btn.textContent = 'REL';
+    btn.style.background = '#f0fdf4';
+    btn.style.borderColor = '#5a8a00';
+    btn.style.color = '#16a34a';
+    absContent.style.display = 'none';
+    relContent.style.display = 'inline-flex';
+    var returnInput = row.querySelector('.view-return-input');
+    if (returnInput) { returnInput.placeholder = 'e.g. 5.0'; returnInput.title = 'Expected outperformance of long over short (%)'; }
+  } else {
+    row.setAttribute('data-row-type', 'absolute');
+    btn.textContent = 'ABS';
+    btn.style.background = '#f8f8f4';
+    btn.style.borderColor = '#ccc';
+    btn.style.color = '#666';
+    absContent.style.display = 'inline';
+    relContent.style.display = 'none';
+    var returnInput = row.querySelector('.view-return-input');
+    if (returnInput) { returnInput.placeholder = ''; returnInput.title = 'Expected absolute return (%)'; }
   }
 }
 
-function drawFrontier(pts, data, rfr) {
-  var canvas = document.getElementById('frontier-canvas');
-  var tooltip = document.getElementById('frontier-tooltip');
-  var wrap = document.getElementById('frontier-wrap');
+function updateViewStatus(sliderEl) {
+  var row = sliderEl.closest('.view-input-row');
+  if (!row) return;
+  var val = parseInt(sliderEl.value);
+  var display = row.querySelector('.view-conf-display');
+  if (display) display.textContent = val + '%';
+  var badge = row.querySelector('.view-status-badge');
+  if (!badge) return;
+  var label, color, bg, border;
+  if (val < 45) { label = 'Bearish'; color = '#dc2626'; bg = '#fef2f2'; border = '#fecaca'; }
+  else if (val > 55) { label = 'Bullish'; color = '#16a34a'; bg = '#f0fdf4'; border = '#bbf7d0'; }
+  else { label = 'Neutral'; color = '#888'; bg = '#f8f8f4'; border = '#e8e8e0'; }
+  badge.textContent = label;
+  badge.style.color = color;
+  badge.style.background = bg;
+  badge.style.borderColor = border;
+}
+
+function renderTab2(data) {
+  var el = document.getElementById('tab-enhanced');
+  if (!el) return;
+  var bl = data && data.bl ? data.bl : null;
+
+  if (!bl) {
+    var errDetail = data && data.bl_error ? '<pre style="margin-top:10px;font-size:.72rem;color:#991b1b;white-space:pre-wrap;word-break:break-all">' + data.bl_error + '</pre>' : '';
+    el.innerHTML = '<div style="padding:24px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:.88rem">Enhanced optimization unavailable — sklearn not installed or optimization failed.<br>Tab 1 MVO results remain valid.' + errDetail + '</div>';
+    return;
+  }
+
+  var tickers = data.tickers_used || Object.keys(data.weights || {});
+  var lwShrinkage = data.lw_shrinkage != null ? (data.lw_shrinkage * 100).toFixed(1) : null;
+  var rfr = data.rfr || (window._getRFR ? window._getRFR() : 0.02);
+
+  // Section A — Two-Step Correction Header
+  var sectionA =
+    '<div class="neo-box results-metrics" style="padding:18px 22px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:14px">// TWO-STEP CORRECTION PIPELINE</div>'
+    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+    + '<div style="padding:8px 14px;background:#f8f8f4;border:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.72rem;color:#333">[Step 1: Ledoit-Wolf Σ]<div style="font-size:.64rem;color:#888;margin-top:3px">Shrink sample covariance</div></div>'
+    + '<div style="font-size:1.2rem;color:#5a8a00">→</div>'
+    + '<div style="padding:8px 14px;background:#f8f8f4;border:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.72rem;color:#333">[Step 2: BL μ blending]<div style="font-size:.64rem;color:#888;margin-top:3px">Blend equilibrium + views</div></div>'
+    + '<div style="font-size:1.2rem;color:#5a8a00">→</div>'
+    + '<div style="padding:8px 14px;background:#f8f8f4;border:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.72rem;color:#333">[Step 3: Re-optimized]<div style="font-size:.64rem;color:#888;margin-top:3px">SLSQP Max Sharpe</div></div>'
+    + '</div>'
+    + (lwShrinkage !== null ? '<div style="font-family:JetBrains Mono,monospace;font-size:.78rem;color:#555">LW shrinkage intensity: <strong>' + lwShrinkage + '%</strong> — ' + lwShrinkage + '% of sample covariance replaced with structured target</div>' : '')
+    + '</div>';
+
+  // Section B — View Input Panel
+  var viewRows = '';
+  var prevViews = (window._optimizedPortfolioState && window._optimizedPortfolioState.views) ? window._optimizedPortfolioState.views : [];
+  var prevAbsMap = {};
+  var prevRelList = [];
+  prevViews.forEach(function(v) {
+    if (!v.type || v.type === 'absolute') prevAbsMap[v.ticker] = v;
+    else if (v.type === 'relative') prevRelList.push(v);
+  });
+
+  for (var i = 0; i < tickers.length; i++) {
+    var ticker = tickers[i];
+    var eqRet = (bl.equilibrium_returns && bl.equilibrium_returns[ticker] != null) ? bl.equilibrium_returns[ticker] : 0;
+    var prevV = prevAbsMap[ticker];
+    var viewRetPct = prevV ? (prevV.view_return * 100).toFixed(1) : (eqRet * 100).toFixed(1);
+    var confPct = prevV ? Math.round(prevV.confidence * 100) : 50;
+    var statusLabel = confPct < 45 ? 'Bearish' : (confPct > 55 ? 'Bullish' : 'Neutral');
+    var statusColor = confPct < 45 ? '#dc2626' : (confPct > 55 ? '#16a34a' : '#888');
+    var statusBg = confPct < 45 ? '#fef2f2' : (confPct > 55 ? '#f0fdf4' : '#f8f8f4');
+    var statusBorder = confPct < 45 ? '#fecaca' : (confPct > 55 ? '#bbf7d0' : '#e8e8e0');
+
+    var shortOptions = '';
+    for (var j = 0; j < tickers.length; j++) {
+      if (tickers[j] !== ticker) shortOptions += '<option value="' + tickers[j] + '">' + tickers[j] + '</option>';
+    }
+
+    var rowId = 'view-row-' + ticker;
+
+    // Check if this ticker had a previous relative view
+    var prevRel = null;
+    for (var ri = 0; ri < prevRelList.length; ri++) {
+      if (prevRelList[ri].long_ticker === ticker) { prevRel = prevRelList[ri]; break; }
+    }
+    var isRel = !!prevRel;
+    var rowType = isRel ? 'relative' : 'absolute';
+    if (isRel) {
+      viewRetPct = (prevRel.view_return * 100).toFixed(1);
+      confPct = Math.round(prevRel.confidence * 100);
+      statusLabel = confPct < 45 ? 'Bearish' : (confPct > 55 ? 'Bullish' : 'Neutral');
+      statusColor = confPct < 45 ? '#dc2626' : (confPct > 55 ? '#16a34a' : '#888');
+      statusBg = confPct < 45 ? '#fef2f2' : (confPct > 55 ? '#f0fdf4' : '#f8f8f4');
+      statusBorder = confPct < 45 ? '#fecaca' : (confPct > 55 ? '#bbf7d0' : '#e8e8e0');
+    }
+
+    viewRows += '<tr class="view-input-row" id="' + rowId + '" data-ticker="' + ticker + '" data-row-type="' + rowType + '">'
+      + '<td style="white-space:nowrap">'
+      + '<button type="button" class="view-type-btn" data-row-id="' + rowId + '" onclick="toggleViewType(\'' + rowId + '\')" style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;background:' + (isRel ? '#f0fdf4' : '#f8f8f4') + ';border:1.5px solid ' + (isRel ? '#5a8a00' : '#ccc') + ';color:' + (isRel ? '#16a34a' : '#666') + ';cursor:pointer;white-space:nowrap">' + (isRel ? 'REL' : 'ABS') + '</button>'
+      + '</td>'
+      + '<td class="view-definition-cell" style="font-family:JetBrains Mono,monospace;font-size:.8rem;font-weight:700;color:#333">'
+      + '<span class="abs-content" style="' + (isRel ? 'display:none' : '') + '">' + ticker + '</span>'
+      + '<span class="rel-content" style="' + (isRel ? 'display:inline-flex;align-items:center;gap:4px;font-size:.72rem' : 'display:none;align-items:center;gap:4px;font-size:.72rem') + '">'
+      + '<span style="color:#16a34a;font-weight:700">LONG</span> ' + ticker + ' <span style="color:#666">vs</span> <span style="color:#dc2626;font-weight:700">SHORT</span> '
+      + '<select class="view-short-select" style="font-family:JetBrains Mono,monospace;font-size:.72rem;padding:2px 4px;border:1.5px solid #ccc;background:#fafafa">' + shortOptions + '</select>'
+      + '</span>'
+      + '</td>'
+      + '<td><input type="number" class="view-return-input" step="0.1" value="' + viewRetPct + '" style="width:80px;padding:5px 8px;font-family:JetBrains Mono,monospace;font-size:.8rem;border:1.5px solid #ccc;background:#fafafa;text-align:right"></td>'
+      + '<td><div style="display:flex;align-items:center;gap:8px"><input type="range" class="view-conf-slider" min="0" max="100" value="' + confPct + '" style="width:100px" oninput="updateViewStatus(this)"><span class="view-conf-display" style="font-family:JetBrains Mono,monospace;font-size:.72rem;width:36px">' + confPct + '%</span></div></td>'
+      + '<td><span class="view-status-badge" style="background:' + statusBg + ';color:' + statusColor + ';border:1px solid ' + statusBorder + '">' + statusLabel + '</span></td>'
+      + '</tr>';
+  }
+
+  // Set the previously selected short ticker after DOM insert (done via setTimeout below)
+  var _prevRelList = prevRelList;
+
+  var sectionB =
+    '<div class="neo-box results-allocation" style="padding:18px 22px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// VIEW INPUT PANEL — Black-Litterman inputs</div>'
+    + '<div style="font-size:.78rem;color:#888;margin-bottom:10px">Pre-populated with equilibrium returns. Adjust view returns and confidence to override the market prior.</div>'
+    + '<table class="view-input-table"><thead><tr><th>Type</th><th>View</th><th>View Return (%)</th><th>Confidence</th><th>Status</th></tr></thead><tbody>'
+    + viewRows + '</tbody></table>'
+    + '<div style="margin:10px 0 14px;padding:10px 14px;background:#f3f3ee;border-left:3px solid #5a8a00;font-family:JetBrains Mono,monospace;font-size:.72rem;color:#666;line-height:1.7">'
+    + '<strong style="color:#5a8a00">ABS</strong> = Absolute view: "I think TICKER will return X% annually." P matrix row: <code>[...0, +1, 0...]</code><br>'
+    + '<strong style="color:#16a34a">REL</strong> = Relative view: "I think LONG will outperform SHORT by X%." P matrix row: <code>[...+1, 0, -1...]</code>'
+    + '</div>'
+    + '<div style="display:flex;gap:10px;margin-top:14px">'
+    + '<button onclick="applyViewsAndOptimize()" style="padding:9px 18px;background:#5a8a00;color:#fff;font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer">Apply Views &amp; Re-optimize</button>'
+    + '<button onclick="if(window._optimizedPortfolioState)window._optimizedPortfolioState.views=[];runOptimization();" style="padding:9px 18px;background:#f8f8f4;color:#555;font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid #ccc;cursor:pointer">Reset to Equilibrium</button>'
+    + '</div>'
+    + '</div>';
+
+  // Section C+E — Enhanced Portfolio Metrics + BL Efficient Frontier side by side
+  var blSr = parseFloat(bl.sharpe_ratio || 0);
+  var mvoSr = parseFloat(data.sharpe_ratio || 0);
+  var srImprovement = blSr - mvoSr;
+  var blSrClass = blSr > 1 ? 'good' : (blSr > 0.5 ? '' : 'warn');
+  var sectionC =
+    '<div class="neo-box results-frontier" style="padding:18px 22px">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// ENHANCED PORTFOLIO — LW covariance + BL returns</div></summary>'
+    + '<div class="results-toggle-body">'
+    + '<div class="frontier-ew-grid">'
+    + '<div id="bl-frontier-wrap" style="position:relative">'
+    + '<canvas id="bl-frontier-canvas" style="width:100%;height:420px;display:block;background:#111;border:1px solid #222"></canvas>'
+    + '<div id="bl-frontier-tooltip" style="position:absolute;display:none;pointer-events:none;z-index:3;min-width:160px;padding:10px 12px;background:rgba(255,255,255,0.96);border:1px solid #d8d8d0;box-shadow:0 8px 22px rgba(0,0,0,.08)"></div>'
+    + '</div>'
+    + '<div class="ew-metrics-panel">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:14px">// BL PORTFOLIO METRICS</div>'
+    + '<div class="bl-metrics-grid">'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">EXPECTED RETURN</div><div class="metric-value good" style="font-size:1.4rem">' + (bl.expected_return * 100).toFixed(2) + '%</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">VOLATILITY</div><div class="metric-value" style="font-size:1.4rem">' + (bl.volatility * 100).toFixed(2) + '%</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">SHARPE RATIO</div><div class="metric-value ' + blSrClass + '" style="font-size:1.4rem">' + blSr.toFixed(3) + '</div></div>'
+    + '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0"><div class="metric-label">DAILY VaR (95%)</div><div class="metric-value warn" style="font-size:1.4rem">' + (Math.abs(bl.var_95 || 0) * 100).toFixed(2) + '%</div></div>'
+    + '</div>'
+    + (srImprovement !== 0 ? '<div style="margin-top:12px;font-family:JetBrains Mono,monospace;font-size:.78rem;color:' + (srImprovement > 0 ? '#16a34a' : '#dc2626') + '">BL vs MVO Sharpe improvement: ' + (srImprovement >= 0 ? '+' : '') + srImprovement.toFixed(3) + '</div>' : '')
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '</details>'
+    + '</div>';
+
+  // Section D — LW Corrected Correlation Heatmap
+  var sectionD =
+    '<div class="neo-box results-correlation" style="padding:18px 22px;background:#fafaf6" id="bl-corr-section">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// SHRUNK CORRELATION — Ledoit-Wolf estimate</div></summary>'
+    + '<div class="results-toggle-body">'
+    + '<div class="correlation-layout">'
+    + '<div id="bl-lw-heatmap-container" style="width:100%;height:280px;background:#111;border:1px solid #222"></div>'
+    + '<div id="bl-lw-corr-quicktake" style="padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555"></div>'
+    + '</div>'
+    + '</div>'
+    + '</details>'
+    + '</div>';
+
+  // Section E — BL Efficient Frontier is now merged into sectionC above
+
+  // Section F — BL Stress Test
+  var sectionF =
+    '<div class="neo-box results-stress" style="padding:18px 22px;background:#fafaf6">'
+    + '<details class="results-toggle" open>'
+    + '<summary><div class="results-toggle-head">// STRESS TEST <span style="background:#d1fae5;color:#065f46;font-family:JetBrains Mono,monospace;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid #6ee7b7;margin-left:8px">Using LW+BL Max Sharpe weights</span></div></summary>'
+    + '<div class="results-toggle-body">'
+    + '<div style="font-size:.82rem;color:#666;font-style:italic;margin-bottom:12px">Applies LW+BL weights to historical crisis periods.</div>'
+    + '<div style="display:grid;grid-template-columns:minmax(0,320px) auto;gap:12px;align-items:center;margin-bottom:12px">'
+    + '<select id="bl-stress-test-scenario"></select>'
+    + '<div id="bl-stress-test-status" style="font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#3a7000"></div>'
+    + '</div>'
+    + '<div id="bl-stress-test-context" style="display:none;margin-top:-4px;margin-bottom:12px;padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555"></div>'
+    + '<div id="bl-stress-test-warning" style="display:none;margin-bottom:12px;padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:.84rem;line-height:1.7"></div>'
+    + '<div id="bl-stress-test-validation" style="display:none;margin-bottom:12px;padding:12px 14px;font-size:.84rem;line-height:1.7"></div>'
+    + '<div class="stress-split">'
+    + '<div>'
+    + '<div id="bl-stress-test-weight-table" style="margin-bottom:12px"></div>'
+    + '<div id="bl-stress-test-chart" style="width:100%;height:420px;background:#111;border:1px solid #222"></div>'
+    + '</div>'
+    + '<div class="stress-side-stack"><div id="bl-stress-test-metrics"></div></div>'
+    + '</div>'
+    + '<details class="stress-drawdown-toggle" style="margin-top:12px;background:#111;border:1px solid #222">'
+    + '<summary>// DRAWDOWN DEPTH</summary>'
+    + '<div id="bl-stress-test-drawdown-chart" style="width:100%;height:280px;background:#111"></div>'
+    + '</details>'
+    + '</div>'
+    + '</details>'
+    + '</div>';
+
+  el.innerHTML = '<div class="results-dashboard">' + sectionA + sectionB + sectionC + sectionD + sectionF + '</div>';
+
+  // Restore previously selected short tickers for relative views
+  if (_prevRelList && _prevRelList.length) {
+    _prevRelList.forEach(function(rv) {
+      var row = document.getElementById('view-row-' + rv.long_ticker);
+      if (!row) return;
+      var sel = row.querySelector('.view-short-select');
+      if (sel && rv.short_ticker) sel.value = rv.short_ticker;
+    });
+  }
+
+  // Render LW heatmap
+  setTimeout(function() {
+    var lwCorrData = data.lw_correlation || null;
+    var rawCorrData = data.raw_correlation || null;
+    if (lwCorrData && typeof Plotly !== 'undefined') {
+      var containerEl = document.getElementById('bl-lw-heatmap-container');
+      if (containerEl) {
+        var labels = lwCorrData.labels || [];
+        var matrix = lwCorrData.matrix || [];
+        Plotly.newPlot(containerEl, [{
+          type: 'heatmap', z: matrix, x: labels, y: labels,
+          zmin: -1, zmax: 1, zmid: 0,
+          colorscale: [[0,'#2c2c2c'],[0.5,'#f5f5f0'],[1,'#5a8a00']],
+          hoverongaps: false, xgap: 1, ygap: 1
+        }], {
+          paper_bgcolor:'#111111', plot_bgcolor:'#111111',
+          margin:{l:54,r:36,t:8,b:36},
+          xaxis:{tickfont:{family:'JetBrains Mono, monospace',size:11,color:'#d4d4cc'},showgrid:false,zeroline:false,fixedrange:true},
+          yaxis:{autorange:'reversed',tickfont:{family:'JetBrains Mono, monospace',size:11,color:'#d4d4cc'},showgrid:false,zeroline:false,fixedrange:true,automargin:true},
+          font:{family:'JetBrains Mono, monospace',color:'#d4d4cc'}
+        }, {displayModeBar:false,responsive:true,scrollZoom:false});
+
+        // Quick Take: find pair that changed most
+        var qtEl = document.getElementById('bl-lw-corr-quicktake');
+        if (qtEl && rawCorrData) {
+          var maxDelta = 0, maxPairA = '', maxPairB = '';
+          var rawLabels = rawCorrData.labels || [];
+          var rawMatrix = rawCorrData.matrix || [];
+          var lwMatrix = lwCorrData.matrix || [];
+          for (var ri = 0; ri < rawLabels.length; ri++) {
+            for (var rj = ri + 1; rj < rawLabels.length; rj++) {
+              var d = Math.abs((lwMatrix[ri] && lwMatrix[ri][rj] != null ? lwMatrix[ri][rj] : 0) - (rawMatrix[ri] && rawMatrix[ri][rj] != null ? rawMatrix[ri][rj] : 0));
+              if (d > maxDelta) { maxDelta = d; maxPairA = rawLabels[ri]; maxPairB = rawLabels[rj]; }
+            }
+          }
+          var lwShr = data.lw_shrinkage != null ? (data.lw_shrinkage * 100).toFixed(1) + '% shrinkage intensity applied. ' : '';
+          qtEl.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Quick Take</div>'
+            + lwShr + (maxPairA ? '<strong>' + maxPairA + ' / ' + maxPairB + '</strong> had the largest correlation change (' + maxDelta.toFixed(2) + ') after shrinkage.' : '');
+        }
+      }
+    }
+
+    // Render BL frontier
+    if (data.bl_frontier && data.bl_frontier.length > 0) {
+      drawFrontier(data.bl_frontier, data.bl, rfr, 'bl-frontier-canvas', 'bl-frontier-wrap', data.frontier || null);
+    }
+
+    // Render BL stress test
+    var blWeights = bl.weights || {};
+    var blTickers = Object.keys(blWeights);
+    if (blTickers.length > 0) {
+      renderStressTestSection(data, true, {idPrefix: 'bl-', weights: blWeights, tickers: blTickers});
+    }
+  }, 80);
+}
+
+function renderTab3(data) {
+  var el = document.getElementById('tab-comparison');
+  if (!el) return;
+  var bl = data && data.bl ? data.bl : null;
+  var tickers = data.tickers_used || Object.keys(data.weights || {});
+
+  // Section A — Return Estimate Comparison
+  var retRows = '';
+  var raisedCount = 0, loweredCount = 0;
+  for (var i = 0; i < tickers.length; i++) {
+    var t = tickers[i];
+    var histMu = data.mu_hist && data.mu_hist[t] != null ? data.mu_hist[t] : null;
+    var eqMu = bl && bl.equilibrium_returns && bl.equilibrium_returns[t] != null ? bl.equilibrium_returns[t] : null;
+    var blMu = bl && bl.bl_returns && bl.bl_returns[t] != null ? bl.bl_returns[t] : null;
+    var delta = (blMu != null && histMu != null) ? blMu - histMu : null;
+    if (delta != null) { if (delta > 0) raisedCount++; else if (delta < 0) loweredCount++; }
+    var deltaColor = delta == null ? '#888' : (delta > 0 ? '#16a34a' : '#dc2626');
+    retRows += '<tr>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;font-weight:700;padding:9px 12px;border-bottom:1px solid #e8e8e0">' + t + '</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:right">' + (histMu != null ? (histMu * 100).toFixed(2) + '%' : '—') + '</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:right">' + (eqMu != null ? (eqMu * 100).toFixed(2) + '%' : '—') + '</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:right">' + (blMu != null ? (blMu * 100).toFixed(2) + '%' : '—') + '</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:right;color:' + deltaColor + '">' + (delta != null ? (delta >= 0 ? '+' : '') + (delta * 100).toFixed(2) + '%' : '—') + '</td>'
+      + '</tr>';
+  }
+  var retSummary = bl ? 'BL raised returns on ' + raisedCount + ' tickers and lowered ' + loweredCount + ' tickers based on equilibrium and views.' : 'Enhanced model data unavailable.';
+  var sectionA =
+    '<div class="neo-box" style="padding:18px 22px;margin-bottom:14px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// RETURN ESTIMATE COMPARISON</div>'
+    + '<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e8e8e0"><thead><tr>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:left">Ticker</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Historical μ</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Equilibrium μ</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">BL μ</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Delta</th>'
+    + '</tr></thead><tbody>' + retRows + '</tbody></table>'
+    + '<div style="margin-top:10px;font-size:.78rem;color:#555;font-style:italic">' + retSummary + '</div>'
+    + '</div>';
+
+  // Section B — Correlation Matrix Comparison
+  var sectionB =
+    '<div class="neo-box" style="padding:18px 22px;margin-bottom:14px;background:#fafaf6">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// CORRELATION MATRIX COMPARISON</div>'
+    + (data.lw_shrinkage != null ? '<div style="font-family:JetBrains Mono,monospace;font-size:.72rem;color:#555;margin-bottom:10px">LW shrinkage: <strong>' + (data.lw_shrinkage * 100).toFixed(1) + '%</strong> — extreme correlations pulled toward the mean</div>' : '')
+    + '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-start">'
+    + '<div class="corr-compare-card" id="t3-raw-heatmap-card" style="overflow:hidden;display:inline-block"></div>'
+    + '<div class="corr-compare-card" id="t3-lw-heatmap-card" style="overflow:hidden;display:inline-block"></div>'
+    + '</div>'
+    + (data.raw_correlation && data.lw_correlation ? '<div style="margin-top:12px"><table class="corr-compare-table"><thead><tr><th>Pair</th><th style="text-align:right">Sample</th><th style="text-align:right">LW</th><th style="text-align:right">Delta</th><th>Label</th></tr></thead><tbody>' + buildCorrelationChangeRows(data.raw_correlation, data.lw_correlation) + '</tbody></table></div>' : '<div style="color:#888;font-size:.82rem;margin-top:10px">Enhanced model data unavailable.</div>')
+    + '</div>';
+
+  // Section C — Weight Allocation Comparison
+  var weightRows = '';
+  var mvoWeights = data.weights || {};
+  var blWeights = bl ? (bl.weights || {}) : {};
+  var maxMvoT = '', maxMvoW = -1, maxBlT = '', maxBlW = -1;
+  var maxDiff = 0;
+  for (var wi = 0; wi < tickers.length; wi++) {
+    var wt = tickers[wi];
+    var mvoW = (mvoWeights[wt] || 0) * 100;
+    var blW = (blWeights[wt] || 0) * 100;
+    var wDiff = blW - mvoW;
+    if (Math.abs(wDiff) > maxDiff) maxDiff = Math.abs(wDiff);
+    if (mvoW > maxMvoW) { maxMvoW = mvoW; maxMvoT = wt; }
+    if (blW > maxBlW) { maxBlW = blW; maxBlT = wt; }
+    var barColor = wDiff >= 0 ? '#16a34a' : '#dc2626';
+    weightRows += '<tr>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;font-weight:700">' + wt + '</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid #e8e8e0">'
+      + '<div style="display:flex;align-items:center;gap:8px"><div style="background:#e8e8e0;height:4px;width:' + Math.min(mvoW * 1.5, 120) + 'px;border-radius:2px"><div style="background:#9ca3af;height:100%;width:' + Math.min(mvoW / Math.max(mvoW, blW, 1) * 100, 100) + '%;border-radius:2px"></div></div><span style="font-family:JetBrains Mono,monospace;font-size:.78rem;min-width:44px">' + mvoW.toFixed(1) + '%</span></div>'
+      + '</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid #e8e8e0">'
+      + '<div style="display:flex;align-items:center;gap:8px"><div style="background:#e8e8e0;height:4px;width:' + Math.min(blW * 1.5, 120) + 'px;border-radius:2px"><div style="background:#5a8a00;height:100%;width:' + Math.min(blW / Math.max(mvoW, blW, 1) * 100, 100) + '%;border-radius:2px"></div></div><span style="font-family:JetBrains Mono,monospace;font-size:.78rem;min-width:44px;color:' + barColor + '">' + blW.toFixed(1) + '%</span></div>'
+      + '</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;color:' + barColor + '">' + (wDiff >= 0 ? '+' : '') + wDiff.toFixed(1) + '%</td>'
+      + '</tr>';
+  }
+  var wNote = (!bl) ? 'Enhanced model data unavailable.' : (maxDiff < 5 ? 'LW+BL produced similar allocation to MVO.' : 'LW+BL shifted weight from <strong>' + maxMvoT + '</strong> toward <strong>' + maxBlT + '</strong>.');
+  var sectionC =
+    '<div class="neo-box" style="padding:18px 22px;margin-bottom:14px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// WEIGHT ALLOCATION COMPARISON</div>'
+    + '<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e8e8e0"><thead><tr>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:left">Ticker</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">MVO Weight</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">LW+BL Weight</th>'
+    + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">Δ</th>'
+    + '</tr></thead><tbody>' + weightRows + '</tbody></table>'
+    + '<div style="margin-top:10px;font-size:.78rem;color:#555">' + wNote + '</div>'
+    + '</div>';
+
+  // Section D — Risk Metrics Comparison
+  var mvoMs = data.max_sharpe || { ret: data.expected_return, vol: data.volatility, sr: data.sharpe_ratio };
+  function fmtDiff(v, better, suffix) {
+    if (v == null || isNaN(v)) return '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0">—</td>';
+    var isGood = better === 'higher' ? v > 0 : v < 0;
+    var color = isGood ? '#16a34a' : '#dc2626';
+    return '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;color:' + color + '">' + (v >= 0 ? '+' : '') + (suffix === '%' ? (v * 100).toFixed(2) + '%' : v.toFixed(3)) + '</td>';
+  }
+  function fmtVal(v, suffix) {
+    if (v == null || isNaN(v)) return '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0">—</td>';
+    return '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0">' + (suffix === '%' ? (v * 100).toFixed(2) + '%' : v.toFixed(3)) + '</td>';
+  }
+  var metrics4Rows = '';
+  if (bl) {
+    var mRows = [
+      ['Expected Return', mvoMs.ret, bl.expected_return, 'higher', '%'],
+      ['Volatility', mvoMs.vol, bl.volatility, 'lower', '%'],
+      ['Sharpe Ratio', mvoMs.sr || data.sharpe_ratio, bl.sharpe_ratio, 'higher', 'num'],
+      ['Daily VaR (95%)', data.var_95, bl.var_95, 'lower', '%'],
+    ];
+    mRows.forEach(function(r) {
+      var diff = r[2] != null && r[1] != null ? r[2] - r[1] : null;
+      metrics4Rows += '<tr>'
+        + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;font-weight:700">' + r[0] + '</td>'
+        + fmtVal(r[1], r[4]) + fmtVal(r[2], r[4]) + fmtDiff(diff, r[3], r[4])
+        + '</tr>';
+    });
+    // Rows 5-6: stress test drawdown (async)
+    metrics4Rows += '<tr id="t3-gfc-row">'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;font-weight:700">Max Drawdown (2008 GFC)</td>'
+      + '<td id="t3-gfc-mvo" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '<td id="t3-gfc-bl" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '<td id="t3-gfc-diff" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '</tr>';
+    metrics4Rows += '<tr id="t3-rate-row">'
+      + '<td style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;font-weight:700">Max Drawdown (2022 Rate Hike)</td>'
+      + '<td id="t3-rate-mvo" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '<td id="t3-rate-bl" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '<td id="t3-rate-diff" style="font-family:JetBrains Mono,monospace;font-size:.78rem;padding:9px 12px;border-bottom:1px solid #e8e8e0;text-align:center">—</td>'
+      + '</tr>';
+  }
+  var sectionD =
+    '<div class="neo-box" style="padding:18px 22px;margin-bottom:14px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// RISK METRICS COMPARISON</div>'
+    + (bl ? '<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e8e8e0"><thead><tr>'
+      + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:left">Metric</th>'
+      + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">MVO</th>'
+      + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">LW+BL</th>'
+      + '<th style="padding:9px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#666">Difference</th>'
+      + '</tr></thead><tbody>' + metrics4Rows + '</tbody></table>'
+      : '<div style="color:#888;font-size:.82rem">Enhanced model data unavailable.</div>')
+    + '</div>';
+
+  // Section E — Instability Score Comparison
+  var instData = data.instability || null;
+  var sectionE =
+    '<div class="neo-box" style="padding:18px 22px;margin-bottom:14px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// INSTABILITY SCORE COMPARISON</div>'
+    + (instData ? (
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">'
+      + '<div style="padding:16px;background:#f8f8f4;border:1px solid #e8e8e0;text-align:center"><div style="font-family:JetBrains Mono,monospace;font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:8px">MVO INSTABILITY</div><div style="font-size:1.6rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + (instData.mvo < 0.05 ? '#16a34a' : '#dc2626') + '">' + (instData.mvo || 0).toFixed(4) + '</div></div>'
+      + '<div style="padding:16px;background:#f8f8f4;border:1px solid #e8e8e0;text-align:center"><div style="font-family:JetBrains Mono,monospace;font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:8px">LW+BL INSTABILITY</div><div style="font-size:1.6rem;font-weight:700;font-family:JetBrains Mono,monospace;color:' + (instData.bl != null && instData.bl < instData.mvo ? '#16a34a' : '#b45309') + '">' + (instData.bl != null ? instData.bl.toFixed(4) : '—') + '</div></div>'
+      + '</div>'
+      + '<div style="font-size:.78rem;color:#555;line-height:1.6">Lower score = more stable weights under input perturbation. LW+BL is expected to score lower because shrinkage improves matrix conditioning.</div>'
+    ) : '<div style="color:#888;font-size:.82rem">Instability analysis unavailable.</div>')
+    + '</div>';
+
+  // Section F — Stress Test Grid
+  var scenarioKeys = [
+    {label: '2008 GFC', scenario: '2008 Global Financial Crisis', cellMvo: 't3-grid-gfc-mvo', cellBl: 't3-grid-gfc-bl'},
+    {label: 'COVID', scenario: 'COVID Crash', cellMvo: 't3-grid-covid-mvo', cellBl: 't3-grid-covid-bl'},
+    {label: '2022 Rates', scenario: '2022 Rate Hike Cycle', cellMvo: 't3-grid-rate-mvo', cellBl: 't3-grid-rate-bl'},
+    {label: 'Dot-Com', scenario: 'Dot-Com Bust', cellMvo: 't3-grid-dotcom-mvo', cellBl: 't3-grid-dotcom-bl'}
+  ];
+  var gridHead = '<tr><th style="text-align:left">Model</th>' + scenarioKeys.map(function(s){return '<th>' + s.label + '</th>';}).join('') + '</tr>';
+  var gridMvoRow = '<tr><td style="font-weight:700;font-family:JetBrains Mono,monospace;font-size:.74rem">MVO Max Sharpe</td>' + scenarioKeys.map(function(s){return '<td id="' + s.cellMvo + '"><div class="spinner" style="display:inline-block"></div></td>';}).join('') + '</tr>';
+  var gridBlRow = bl ? ('<tr><td style="font-weight:700;font-family:JetBrains Mono,monospace;font-size:.74rem">LW+BL Enhanced</td>' + scenarioKeys.map(function(s){return '<td id="' + s.cellBl + '"><div class="spinner" style="display:inline-block"></div></td>';}).join('') + '</tr>') : '';
+  var sectionF =
+    '<div class="neo-box" style="padding:18px 22px">'
+    + '<div style="font-family:JetBrains Mono,monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#666;margin-bottom:12px">// STRESS TEST GRID — Max Drawdown by Crisis</div>'
+    + '<table class="stress-test-grid-table"><thead>' + gridHead + '</thead><tbody>' + gridMvoRow + gridBlRow + '</tbody></table>'
+    + '</div>';
+
+  el.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:14px">'
+    + '<div class="t3-grid t3-row1">' + sectionA + sectionC + '</div>'
+    + '<div class="t3-grid t3-row2">' + sectionD + '<div class="t3-right-stack">' + sectionE + sectionF + '</div></div>'
+    + sectionB
+    + '</div>';
+
+  // Render heatmaps
+  setTimeout(function() {
+    var rawCorrData = data.raw_correlation || null;
+    var lwCorrData = data.lw_correlation || null;
+    if (typeof Plotly !== 'undefined') {
+      if (rawCorrData) renderSmallHeatmapById('t3-raw-heatmap-card', rawCorrData, 'Sample (raw historical)', 'Computed directly from historical returns', false);
+      if (lwCorrData) renderSmallHeatmapById('t3-lw-heatmap-card', lwCorrData, 'Ledoit-Wolf (shrinkage corrected)', 'Extreme values pulled toward a stable target', true);
+      // Resize both plots so Plotly redraws at the new side-by-side width
+      setTimeout(function() {
+        var rawPlot = document.getElementById('t3-raw-heatmap-card-plot');
+        var lwPlot = document.getElementById('t3-lw-heatmap-card-plot');
+        if (rawPlot) Plotly.Plots.resize(rawPlot);
+        if (lwPlot) Plotly.Plots.resize(lwPlot);
+      }, 50);
+    }
+
+    // Async stress test grid
+    if (!bl || !API_URL) return;
+    var stressCache = window._t3StressCache = {};
+    var mvoWts = data.weights || {};
+    var blWts = bl.weights || {};
+    var mvoTickers = tickers.slice();
+    var blTickers = Object.keys(blWts);
+
+    function updateCell(cellId, totalReturn) {
+      var cell = document.getElementById(cellId);
+      if (!cell) return;
+      var color = totalReturn >= 0 ? '#16a34a' : '#dc2626';
+      cell.innerHTML = '<span style="font-family:JetBrains Mono,monospace;font-size:.8rem;font-weight:700;color:' + color + '">' + (totalReturn >= 0 ? '+' : '') + totalReturn.toFixed(1) + '%</span>';
+    }
+    function updateDiffCell(cellId, mvoVal, blVal) {
+      if (mvoVal == null || blVal == null) return;
+      var diff = blVal - mvoVal;
+      var cell = document.getElementById(cellId);
+      if (!cell) return;
+      var color = diff <= 0 ? '#16a34a' : '#dc2626'; // lower drawdown is better for GFC/rate rows
+      cell.innerHTML = '<span style="font-family:JetBrains Mono,monospace;font-size:.74rem;color:' + color + '">' + (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%</span>';
+    }
+
+    scenarioKeys.forEach(function(sk) {
+      var cKeyMvo = sk.scenario + '_mvo';
+      var cKeyBl = sk.scenario + '_bl';
+
+      function fillMvo(totalReturn) {
+        updateCell(sk.cellMvo, totalReturn);
+        // Also update Section D drawdown rows if GFC or Rate
+        if (sk.scenario === '2008 Global Financial Crisis') {
+          stressCache._gfc_mvo = totalReturn;
+          var gfcCell = document.getElementById('t3-gfc-mvo');
+          if (gfcCell) gfcCell.textContent = totalReturn.toFixed(1) + '%';
+        } else if (sk.scenario === '2022 Rate Hike Cycle') {
+          stressCache._rate_mvo = totalReturn;
+          var rateCell = document.getElementById('t3-rate-mvo');
+          if (rateCell) rateCell.textContent = totalReturn.toFixed(1) + '%';
+        }
+      }
+      function fillBl(totalReturn) {
+        updateCell(sk.cellBl, totalReturn);
+        if (sk.scenario === '2008 Global Financial Crisis') {
+          stressCache._gfc_bl = totalReturn;
+          var gfcCellBl = document.getElementById('t3-gfc-bl');
+          if (gfcCellBl) gfcCellBl.textContent = totalReturn.toFixed(1) + '%';
+        } else if (sk.scenario === '2022 Rate Hike Cycle') {
+          stressCache._rate_bl = totalReturn;
+          var rateCellBl = document.getElementById('t3-rate-bl');
+          if (rateCellBl) rateCellBl.textContent = totalReturn.toFixed(1) + '%';
+        }
+      }
+
+      if (stressCache[cKeyMvo] != null) { fillMvo(stressCache[cKeyMvo]); }
+      else {
+        fetch(API_URL + '/stress-test', {method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:mvoTickers,weights:mvoWts,scenario:sk.scenario})})
+          .then(function(r){return r.json();}).then(function(p){
+            console.log('[T3-GRID] MVO', sk.scenario, 'response: scenario=', p.scenario, 'first_date=', p.optimized && p.optimized.dates ? p.optimized.dates[0] : 'N/A', 'drawdown=', p.metrics && p.metrics.max_drawdown ? p.metrics.max_drawdown.optimized : 'N/A');
+            if (p && p.metrics && p.metrics.max_drawdown != null) {
+              var tr = -(Math.abs(p.metrics.max_drawdown.optimized));
+              stressCache[cKeyMvo] = tr;
+              fillMvo(tr);
+            }
+          }).catch(function(e){ console.error('[T3-GRID] MVO', sk.scenario, 'error:', e); });
+      }
+
+      if (bl && (stressCache[cKeyBl] != null)) { fillBl(stressCache[cKeyBl]); }
+      else if (bl) {
+        fetch(API_URL + '/stress-test', {method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:blTickers,weights:blWts,scenario:sk.scenario})})
+          .then(function(r){return r.json();}).then(function(p){
+            console.log('[T3-GRID] BL', sk.scenario, 'response: scenario=', p.scenario, 'first_date=', p.optimized && p.optimized.dates ? p.optimized.dates[0] : 'N/A', 'drawdown=', p.metrics && p.metrics.max_drawdown ? p.metrics.max_drawdown.optimized : 'N/A');
+            if (p && p.metrics && p.metrics.max_drawdown != null) {
+              var tr = -(Math.abs(p.metrics.max_drawdown.optimized));
+              stressCache[cKeyBl] = tr;
+              fillBl(tr);
+            }
+          }).catch(function(e){ console.error('[T3-GRID] BL', sk.scenario, 'error:', e); });
+      }
+    });
+  }, 80);
+}
+
+function renderSmallHeatmapById(containerId, payload, title, subtitle, showColorScale) {
+  if (showColorScale === undefined) showColorScale = true;
+  var containerEl = document.getElementById(containerId);
+  if (!containerEl || !payload || typeof Plotly === 'undefined') return;
+  var labels = payload.labels || [];
+  var matrix = payload.matrix || [];
+  // Fixed dimensions so plot area is square for square cells
+  // margins: l=44, t=8, b=38; r=8 (no colorbar) or r=64 (colorbar)
+  var mL = 44, mT = 8, mB = 38;
+  var mR = showColorScale ? 64 : 52;
+  var plotSide = 242; // square plot area
+  var plotW = 380;   // wider plot area — stretch horizontally
+  var chartW = plotW + mL + mR;
+  var chartH = plotSide + mT + mB;
+  containerEl.innerHTML = '<div style="color:#d4d4cc;font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">' + title + '</div>'
+    + '<div style="color:#9ca3af;font-size:.74rem;margin-bottom:6px">' + subtitle + '</div>'
+    + '<div style="width:' + chartW + 'px;height:' + chartH + 'px" id="' + containerId + '-plot"></div>';
+  var plotEl = document.getElementById(containerId + '-plot');
+  if (!plotEl) return;
+  Plotly.newPlot(plotEl, [{
+    type:'heatmap', z:matrix, x:labels, y:labels, zmin:-1, zmax:1, zmid:0,
+    colorscale:[[0,'#2c2c2c'],[0.5,'#f5f5f0'],[1,'#5a8a00']], hoverongaps:false, xgap:2, ygap:2,
+    showscale: showColorScale,
+    colorbar:{thickness:9,len:0.8,outlinecolor:'#3a3a3a',tickfont:{family:'JetBrains Mono, monospace',size:9,color:'#d4d4cc'}}
+  }], {
+    paper_bgcolor:'#111111', plot_bgcolor:'#111111',
+    width: chartW, height: chartH,
+    margin:{l:mL, r:mR, t:mT, b:mB},
+    xaxis:{tickfont:{family:'JetBrains Mono, monospace',size:10,color:'#d4d4cc'},showgrid:false,zeroline:false,fixedrange:true},
+    yaxis:{autorange:'reversed',tickfont:{family:'JetBrains Mono, monospace',size:10,color:'#d4d4cc'},showgrid:false,zeroline:false,fixedrange:true},
+    font:{family:'JetBrains Mono, monospace',color:'#d4d4cc'}
+  }, {displayModeBar:false,responsive:false,scrollZoom:false});
+}
+
+
+function renderStressTestSection(data, isLive, opts) {
+  opts = opts || {};
+  var prefix = opts.idPrefix || '';
+  var customWeights = opts.weights || null;
+  var customTickers = opts.tickers || null;
+
+  var selectEl = document.getElementById(prefix + 'stress-test-scenario');
+  var chartEl = document.getElementById(prefix + 'stress-test-chart');
+  var drawdownChartEl = document.getElementById(prefix + 'stress-test-drawdown-chart');
+  var metricsEl = document.getElementById(prefix + 'stress-test-metrics');
+  var warningEl = document.getElementById(prefix + 'stress-test-warning');
+  var contextEl = document.getElementById(prefix + 'stress-test-context');
+  var validationEl = document.getElementById(prefix + 'stress-test-validation');
+  var weightTableEl = document.getElementById(prefix + 'stress-test-weight-table');
+  var statusEl = document.getElementById(prefix + 'stress-test-status');
+
+  if (!selectEl || !chartEl || !drawdownChartEl || !metricsEl || !warningEl || !contextEl || !validationEl || !weightTableEl || !statusEl) return;
+
+  var optimizedState = window._optimizedPortfolioState || null;
+  var baseTickers, baseWeightsObj;
+  if (customTickers && customWeights) {
+    baseTickers = customTickers.slice();
+    baseWeightsObj = customWeights;
+  } else {
+    if (!optimizedState || !optimizedState.tickers || !optimizedState.tickers.length) {
+      validationEl.style.display = 'block';
+      validationEl.style.background = '#fef2f2';
+      validationEl.style.border = '1px solid #fecaca';
+      validationEl.style.color = '#b91c1c';
+      validationEl.innerHTML = 'Weight error: no optimized portfolio state found. Please run optimization before stress testing.';
+      statusEl.textContent = '';
+      chartEl.innerHTML = '';
+      drawdownChartEl.innerHTML = '';
+      metricsEl.innerHTML = '';
+      warningEl.style.display = 'none';
+      contextEl.innerHTML = '';
+      weightTableEl.innerHTML = '';
+      return;
+    }
+    baseTickers = optimizedState.tickers.slice();
+    baseWeightsObj = optimizedState.weights || {};
+  }
+
+  selectEl.innerHTML = '';
+  for (var i = 0; i < STRESS_TEST_SCENARIOS.length; i++) {
+    var opt = document.createElement('option');
+    opt.value = STRESS_TEST_SCENARIOS[i];
+    opt.textContent = STRESS_TEST_SCENARIOS[i];
+    selectEl.appendChild(opt);
+  }
+
+  if (!isLive || !API_URL || typeof Plotly === 'undefined') {
+    chartEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#888">Stress test unavailable in simulated mode</div>';
+    drawdownChartEl.innerHTML = '';
+    metricsEl.innerHTML = '';
+    warningEl.style.display = 'none';
+    contextEl.innerHTML = '';
+    validationEl.style.display = 'none';
+    statusEl.textContent = '';
+    weightTableEl.innerHTML = '';
+    return;
+  }
+
+  var _stressRequestId = 0;  // monotonic counter — stale responses are discarded
+
+  function showWarning(messages) {
+    var warningEl = document.getElementById(prefix + 'stress-test-warning');
+    if (!warningEl) return;
+    if (!messages || !messages.length) {
+      warningEl.style.display = 'none';
+      warningEl.innerHTML = '';
+      return;
+    }
+    warningEl.style.display = 'block';
+    warningEl.innerHTML = messages.join('<br>');
+  }
+
+  function renderWeightTable(tickers, weightArray, assetStats) {
+    var weightTableEl = document.getElementById(prefix + 'stress-test-weight-table');
+    if (!weightTableEl) return;
+    var equalWeight = tickers.length ? 1 / tickers.length : 0;
+    var rows = '';
+    for (var wi = 0; wi < tickers.length; wi++) {
+      var stats = assetStats && assetStats[tickers[wi]] ? assetStats[tickers[wi]] : null;
+      var crisisReturn = stats ? stats.crisis_return.toFixed(2) + '%' : '-';
+      var contribution = stats ? stats.contribution.toFixed(2) + '%' : '-';
+      rows += '<tr>'
+        + '<td style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.78rem;color:#333">' + tickers[wi] + '</td>'
+        + '<td style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.78rem;color:#333;text-align:right">' + (weightArray[wi] * 100).toFixed(1) + '%</td>'
+        + '<td style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.78rem;color:#666;text-align:right">' + (equalWeight * 100).toFixed(1) + '%</td>'
+        + '<td style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.78rem;color:#333;text-align:right">' + crisisReturn + '</td>'
+        + '<td style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.78rem;color:#333;text-align:right">' + contribution + '</td>'
+        + '</tr>';
+    }
+
+    weightTableEl.innerHTML =
+      '<table style="width:100%;border-collapse:collapse;background:#f8f8f4;border:1px solid #e8e8e0">'
+      + '<thead><tr>'
+      + '<th style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:left">Ticker</th>'
+      + '<th style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Optimized Weight</th>'
+      + '<th style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Equal Weight</th>'
+      + '<th style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Crisis Return</th>'
+      + '<th style="padding:10px 12px;border-bottom:1px solid #e8e8e0;font-family:JetBrains Mono,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#666;text-align:right">Contribution</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function validateWeights(tickers, weightArray, weightMode, optimizedRunExists) {
+    var validationEl = document.getElementById(prefix + 'stress-test-validation');
+    var statusEl = document.getElementById(prefix + 'stress-test-status');
+    var sum = 0;
+    var hasNaN = false;
+
+    for (var vi = 0; vi < weightArray.length; vi++) {
+      var w = weightArray[vi];
+      sum += w;
+      if (isNaN(w)) hasNaN = true;
+    }
+
+    validationEl.style.display = 'block';
+    statusEl.textContent = '';
+    if (Math.abs(sum - 1.0) > 0.001) {
+      validationEl.style.background = '#fef2f2';
+      validationEl.style.border = '1px solid #fecaca';
+      validationEl.style.color = '#b91c1c';
+      validationEl.innerHTML = 'Weight error: weights sum to ' + sum.toFixed(6) + ', not 1.0. Stress test results unreliable.';
+      return false;
+    }
+    if (hasNaN) {
+      validationEl.style.background = '#fef2f2';
+      validationEl.style.border = '1px solid #fecaca';
+      validationEl.style.color = '#b91c1c';
+      validationEl.innerHTML = 'NaN detected in weights. Please re-run optimization before stress testing.';
+      return false;
+    }
+
+    if (weightMode === 'equal_weight_fallback' && !optimizedRunExists) {
+      validationEl.style.display = 'none';
+      statusEl.style.color = '#9a3412';
+      statusEl.textContent = 'Equal-weight fallback active';
+    } else if (weightMode === 'equal_weight_fallback') {
+      validationEl.style.display = 'none';
+      statusEl.style.color = '#9a3412';
+      statusEl.textContent = 'Equal-weight fallback active';
+    } else if (weightMode === 'redistributed') {
+      validationEl.style.display = 'none';
+      statusEl.style.color = '#3a7000';
+      statusEl.textContent = 'Optimized weights redistributed';
+    } else {
+      validationEl.style.display = 'none';
+      statusEl.style.color = '#3a7000';
+      statusEl.textContent = 'Optimized weights active';
+    }
+    return true;
+  }
+
+  var baseWeightArray = [];
+  for (var bi = 0; bi < baseTickers.length; bi++) {
+    baseWeightArray.push(parseFloat(baseWeightsObj[baseTickers[bi]] || 0));
+  }
+
+  renderWeightTable(baseTickers, baseWeightArray, null);
+  if (!validateWeights(baseTickers, baseWeightArray, 'optimized', true)) {
+    chartEl.innerHTML = '';
+    drawdownChartEl.innerHTML = '';
+    metricsEl.innerHTML = '';
+    warningEl.style.display = 'none';
+    return;
+  }
+
+  function renderStressMetrics(payload) {
+    var metricsEl = document.getElementById(prefix + 'stress-test-metrics');
+    if (!payload || !payload.metrics || !metricsEl) {
+      if (metricsEl) metricsEl.innerHTML = '';
+      return;
+    }
+
+    var metrics = payload.metrics;
+    var ddColor = metrics.max_drawdown.difference >= 0 ? '#3a7000' : '#b91c1c';
+    var trColor = metrics.total_return.difference >= 0 ? '#3a7000' : '#b91c1c';
+    var volColor = metrics.crisis_volatility.difference >= 0 ? '#3a7000' : '#b91c1c';
+
+    function escapeAttr(text) {
+      return String(text || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function comparisonCard(title, optimizedValue, spyValue, diffValue, diffColor, suffix, favorableLabel, infoText) {
+      return '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0">'
+        + '<div class="metric-label" style="margin-bottom:10px">' + title + (infoText ? '<span class="info-tip" title="' + escapeAttr(infoText) + '">i</span>' : '') + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">Optimized</div><div class="metric-value" style="font-size:1.05rem">' + formatMetricValue(optimizedValue, suffix) + '</div></div>'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">SPY</div><div class="metric-value" style="font-size:1.05rem">' + formatMetricValue(spyValue, suffix) + '</div></div>'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">Difference</div><div class="metric-value" style="font-size:1.05rem;color:' + diffColor + '">' + formatMetricValue(diffValue, suffix, true) + '</div></div>'
+        + '</div>'
+        + '<div style="margin-top:8px;font-size:.76rem;color:' + diffColor + '">' + favorableLabel + '</div>'
+        + '</div>';
+    }
+
+    function formatMetricValue(value, suffix, signed) {
+      if (typeof value !== 'number' || isNaN(value)) return '-';
+      var prefix = signed && value >= 0 ? '+' : '';
+      return prefix + value.toFixed(2) + suffix;
+    }
+
+    function totalReturnCard(metrics) {
+      return '<div style="padding:12px 14px;background:#f8f8f4;border:1px solid #e8e8e0">'
+        + '<div class="metric-label" style="margin-bottom:10px">TOTAL RETURN</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">Optimized</div><div class="metric-value" style="font-size:1.05rem">' + formatMetricValue(metrics.total_return.optimized, '%') + '</div></div>'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">Equal Wt</div><div class="metric-value" style="font-size:1.05rem">' + formatMetricValue(metrics.total_return.equal_weight, '%') + '</div></div>'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">SPY</div><div class="metric-value" style="font-size:1.05rem">' + formatMetricValue(metrics.total_return.spy, '%') + '</div></div>'
+        + '<div><div style="font-size:.6rem;font-family:JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:4px">Difference</div><div class="metric-value" style="font-size:1.05rem;color:' + trColor + '">' + formatMetricValue(metrics.total_return.difference, '%', true) + '</div></div>'
+        + '</div>'
+        + '<div style="margin-top:8px;font-size:.76rem;color:' + trColor + '">' + (metrics.total_return.difference >= 0 ? 'Outperformed SPY over full period' : 'Underperformed SPY over full period') + '</div>'
+        + '</div>';
+    }
+
+    metricsEl.innerHTML =
+      '<div class="stress-metric-stack">'
+      + totalReturnCard(metrics)
+      + comparisonCard('MAX DRAWDOWN', metrics.max_drawdown.optimized, metrics.max_drawdown.spy, metrics.max_drawdown.difference, ddColor, '%', metrics.max_drawdown.difference >= 0 ? 'Lower drawdown than SPY' : 'Higher drawdown than SPY', metrics.drawdown_note)
+      + comparisonCard('CRISIS VOLATILITY', metrics.crisis_volatility.optimized, metrics.crisis_volatility.spy, metrics.crisis_volatility.difference, volColor, '%', metrics.crisis_volatility.difference >= 0 ? 'Smoother ride than SPY' : 'More volatile than SPY', metrics.concentration_note)
+      + '<div style="padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00">'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Recovery Note</div>'
+      + '<div style="font-size:.82rem;color:#555;line-height:1.75">' + metrics.recovery_note + '</div>'
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderStressChart(payload) {
+    // Always re-fetch live DOM references to avoid stale closure issues after re-renders
+    var chartEl = document.getElementById(prefix + 'stress-test-chart');
+    var drawdownChartEl = document.getElementById(prefix + 'stress-test-drawdown-chart');
+    var metricsEl = document.getElementById(prefix + 'stress-test-metrics');
+    var contextEl = document.getElementById(prefix + 'stress-test-context');
+    if (!chartEl) return;
+
+    // Validate: check that the returned scenario matches what was requested
+    if (payload && payload._sentScenario && payload.scenario && payload._sentScenario !== payload.scenario) {
+      console.error('[STRESS] SCENARIO MISMATCH: sent=' + payload._sentScenario + ' received=' + payload.scenario);
+      chartEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#c92a2a">Scenario mismatch: sent "' + payload._sentScenario + '" but got "' + payload.scenario + '" — please retry</div>';
+      return;
+    }
+
+    if (!payload || payload.error) {
+      chartEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#888">' + (payload && payload.error ? payload.error : 'Insufficient data for this stress test scenario.') + '</div>';
+      if (drawdownChartEl) drawdownChartEl.innerHTML = '';
+      if (metricsEl) metricsEl.innerHTML = '';
+      if (contextEl) {
+        if (payload && payload.scenario_context) {
+          contextEl.style.display = 'block';
+          contextEl.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Scenario Context</div><div>' + payload.scenario_context + '</div>';
+        } else {
+          contextEl.style.display = 'none';
+          contextEl.innerHTML = '';
+        }
+      }
+      return;
+    }
+
+    if (contextEl) {
+      if (payload.scenario_context) {
+        contextEl.style.display = 'block';
+        var firstDate = (payload.optimized && payload.optimized.dates && payload.optimized.dates.length) ? payload.optimized.dates[0] : '??';
+        var lastDate = (payload.optimized && payload.optimized.dates && payload.optimized.dates.length) ? payload.optimized.dates[payload.optimized.dates.length - 1] : '??';
+        var sentInfo = payload._sentScenario ? (' | sent="' + payload._sentScenario + '"') : '';
+        contextEl.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Scenario Context</div><div>' + payload.scenario_context + '</div>'
+          + '<div style="margin-top:6px;font-family:JetBrains Mono,monospace;font-size:.58rem;color:#888;letter-spacing:.06em">[DEBUG] received="' + payload.scenario + '"' + sentInfo + ' | data=' + firstDate + ' → ' + lastDate + ' | expected=' + (payload.start_date||'?') + ' → ' + (payload.end_date||'?') + '</div>';
+      } else {
+        contextEl.style.display = 'none';
+        contextEl.innerHTML = '';
+      }
+    }
+
+    var availableTickers = payload.available_tickers || baseTickers.slice();
+    var redistributedWeights = payload.redistributed_weights || {};
+    var weightMode = payload.weight_mode || 'optimized';
+    var optimizedRunExists = payload.optimized_run_exists !== false;
+    var stressWeightArray = [];
+    for (var ai = 0; ai < availableTickers.length; ai++) {
+      stressWeightArray.push(parseFloat(redistributedWeights[availableTickers[ai]] || 0));
+    }
+    renderWeightTable(availableTickers, stressWeightArray, payload.asset_stats || null);
+    if (!validateWeights(availableTickers, stressWeightArray, weightMode, optimizedRunExists)) {
+      chartEl.innerHTML = '';
+      if (drawdownChartEl) drawdownChartEl.innerHTML = '';
+      if (metricsEl) metricsEl.innerHTML = '';
+      return;
+    }
+
+    // Purge before newPlot to ensure no stale Plotly state remains
+    try {
+    Plotly.purge(chartEl);
+    Plotly.newPlot(chartEl, [
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Optimized Portfolio',
+        x: payload.optimized.dates,
+        y: payload.optimized.values,
+        line: { color: '#5a8a00', width: 3 }
+      },
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Equal Weight',
+        x: payload.equal_weight.dates,
+        y: payload.equal_weight.values,
+        line: { color: '#9ca3af', width: 2, dash: 'dash' }
+      },
+      {
+        type: 'scatter',
+        mode: 'lines',
+        name: 'SPY',
+        x: payload.spy.dates,
+        y: payload.spy.values,
+        line: { color: '#f5f5f0', width: 2 }
+      }
+    ], {
+      title: {
+        text: payload.scenario,
+        font: { family: 'JetBrains Mono, monospace', size: 13, color: '#d4d4cc' },
+        x: 0.02
+      },
+      paper_bgcolor: '#111111',
+      plot_bgcolor: '#111111',
+      margin: { l: 60, r: 20, t: 48, b: 78 },
+      font: { family: 'JetBrains Mono, monospace', color: '#d4d4cc' },
+      legend: { orientation: 'h', x: 0, y: -0.16 },
+      hovermode: 'x unified',
+      xaxis: {
+        tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' },
+        showgrid: false,
+        zeroline: false
+      },
+      yaxis: {
+        title: { text: 'Indexed Value', font: { family: 'JetBrains Mono, monospace', size: 11, color: '#d4d4cc' } },
+        tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' },
+        gridcolor: '#2c2c2c',
+        zeroline: false
+      },
+      shapes: [{
+        type: 'line',
+        xref: 'paper',
+        yref: 'y',
+        x0: 0,
+        x1: 1,
+        y0: 100,
+        y1: 100,
+        line: { color: '#666666', width: 1, dash: 'dot' }
+      }]
+    }, {
+      displayModeBar: false,
+      responsive: true,
+      scrollZoom: false
+    });
+
+    if (payload.drawdowns) {
+      if (drawdownChartEl) Plotly.purge(drawdownChartEl);
+      Plotly.newPlot(drawdownChartEl, [
+        {
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Optimized Drawdown',
+          x: payload.drawdowns.optimized.dates,
+          y: payload.drawdowns.optimized.values,
+          line: { color: '#5a8a00', width: 2.5 }
+        },
+        {
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Equal Weight Drawdown',
+          x: payload.drawdowns.equal_weight.dates,
+          y: payload.drawdowns.equal_weight.values,
+          line: { color: '#9ca3af', width: 1.8, dash: 'dash' }
+        },
+        {
+          type: 'scatter',
+          mode: 'lines',
+          name: 'SPY Drawdown',
+          x: payload.drawdowns.spy.dates,
+          y: payload.drawdowns.spy.values,
+          line: { color: '#f5f5f0', width: 1.8 }
+        }
+      ], {
+        paper_bgcolor: '#111111',
+        plot_bgcolor: '#111111',
+        margin: { l: 60, r: 20, t: 28, b: 70 },
+        font: { family: 'JetBrains Mono, monospace', color: '#d4d4cc' },
+        title: {
+          text: 'Drawdown Depth',
+          font: { family: 'JetBrains Mono, monospace', size: 12, color: '#d4d4cc' },
+          x: 0.02
+        },
+        legend: { orientation: 'h', x: 0, y: -0.18 },
+        hovermode: 'x unified',
+        xaxis: {
+          tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: { text: 'Drawdown %', font: { family: 'JetBrains Mono, monospace', size: 11, color: '#d4d4cc' } },
+          tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' },
+          gridcolor: '#2c2c2c',
+          zeroline: false
+        },
+        shapes: [{
+          type: 'line',
+          xref: 'paper',
+          yref: 'y',
+          x0: 0,
+          x1: 1,
+          y0: 0,
+          y1: 0,
+          line: { color: '#666666', width: 1, dash: 'dot' }
+        }]
+      }, {
+        displayModeBar: false,
+        responsive: true,
+        scrollZoom: false
+      });
+    } else {
+      if (drawdownChartEl) drawdownChartEl.innerHTML = '';
+    }
+
+    renderStressMetrics(payload);
+    } catch(plotlyErr) {
+      console.error('[STRESS] Plotly render error:', plotlyErr);
+      chartEl.innerHTML = '<div style="padding:12px;font-family:JetBrains Mono,monospace;font-size:.72rem;color:#c92a2a">[RENDER ERROR] ' + plotlyErr.message + '</div>';
+    }
+  }
+
+  function loadScenario() {
+    var myRequestId = ++_stressRequestId;
+    // Always re-fetch elements from live DOM to avoid stale closure references after re-renders
+    var liveChartEl = document.getElementById(prefix + 'stress-test-chart');
+    var liveDrawdownEl = document.getElementById(prefix + 'stress-test-drawdown-chart');
+    var liveMetricsEl = document.getElementById(prefix + 'stress-test-metrics');
+    var liveSelectEl = document.getElementById(prefix + 'stress-test-scenario');
+    if (!liveChartEl || !liveSelectEl) return;
+    var chosenScenario = liveSelectEl.value;
+
+    // Disable dropdown while request is in flight — prevents race conditions
+    liveSelectEl.disabled = true;
+
+    // Purge any existing Plotly charts before clearing innerHTML to destroy
+    // Plotly's internal state — prevents its ResizeObserver from re-rendering
+    // stale data from the previous scenario on top of the new one
+    if (typeof Plotly !== 'undefined') {
+      Plotly.purge(liveChartEl);
+      if (liveDrawdownEl) Plotly.purge(liveDrawdownEl);
+    }
+    liveChartEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#888">Loading stress test...</div>';
+    if (liveDrawdownEl) liveDrawdownEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#888">Loading drawdown path...</div>';
+    if (liveMetricsEl) liveMetricsEl.innerHTML = '';
+    showWarning([]);
+
+    console.log('[STRESS] Fetching scenario:', chosenScenario, 'requestId:', myRequestId);
+
+    fetch(API_URL + '/stress-test', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tickers: baseTickers.slice(),
+        weights: baseWeightsObj,
+        scenario: chosenScenario
+      })
+    })
+    .then(function(res) {
+      if (!res.ok) {
+        return res.json().then(function(err) {
+          throw new Error(err.error || ('Stress test error ' + res.status));
+        });
+      }
+      return res.json();
+    })
+    .then(function(payload) {
+      // Re-enable dropdown
+      var sel = document.getElementById(prefix + 'stress-test-scenario');
+      if (sel) sel.disabled = false;
+      // Discard stale response — a newer request was fired after this one
+      if (myRequestId !== _stressRequestId) {
+        console.log('[STRESS] Discarding stale response for', chosenScenario, '(request', myRequestId, 'superseded by', _stressRequestId, ')');
+        return;
+      }
+      console.log('[STRESS] SENT:', chosenScenario, '| RECEIVED:', payload.scenario, '| dates:', payload.start_date, '-', payload.end_date);
+      // Attach sent scenario for debug display
+      payload._sentScenario = chosenScenario;
+      showWarning(payload.warnings || []);
+      renderStressChart(payload);
+    })
+    .catch(function(err) {
+      var sel = document.getElementById(prefix + 'stress-test-scenario');
+      if (sel) sel.disabled = false;
+      if (myRequestId !== _stressRequestId) return;
+      showWarning([err.message]);
+      renderStressChart({ error: 'Insufficient data for this stress test scenario.' });
+    });
+  }
+
+  selectEl.onchange = loadScenario;
+  selectEl.value = STRESS_TEST_SCENARIOS[0];
+  loadScenario();
+}
+
+function buildCorrelationChangeRows(rawPayload, lwPayload) {
+  if (!rawPayload || !lwPayload) return '';
+  var labels = rawPayload.labels || [];
+  var rawMatrix = rawPayload.matrix || [];
+  var lwMatrix = lwPayload.matrix || [];
+  var rows = '';
+  for (var i = 0; i < labels.length; i++) {
+    for (var j = i + 1; j < labels.length; j++) {
+      var rawVal = rawMatrix[i][j];
+      var lwVal = lwMatrix[i][j];
+      var delta = lwVal - rawVal;
+      var label = Math.abs(delta) < 0.01 ? 'unchanged' : (Math.abs(lwVal) < Math.abs(rawVal) ? 'shrunk' : 'pulled up');
+      var deltaColor = delta < 0 ? '#3a7000' : (delta > 0 ? '#b45309' : '#666');
+      rows += '<tr>'
+        + '<td>' + labels[i] + ' / ' + labels[j] + '</td>'
+        + '<td style="text-align:right">' + rawVal.toFixed(2) + '</td>'
+        + '<td style="text-align:right">' + lwVal.toFixed(2) + '</td>'
+        + '<td style="text-align:right;color:' + deltaColor + '">' + (delta >= 0 ? '+' : '') + delta.toFixed(2) + '</td>'
+        + '<td style="text-transform:uppercase;color:#666">' + label + '</td>'
+        + '</tr>';
+    }
+  }
+  return rows;
+}
+
+function renderCorrelationMatrix(data) {
+  var heatmapEl = document.getElementById('correlation-heatmap');
+  var insightEl = document.getElementById('correlation-insight');
+  var toggleEl = document.getElementById('corr-compare-toggle');
+  var comparePanelEl = document.getElementById('corr-compare-panel');
+  var rawHeatmapsEl = document.getElementById('corr-tab-heatmaps');
+  var changesEl = document.getElementById('corr-tab-changes');
+  var portfolioEl = document.getElementById('corr-tab-portfolio');
+  var corrData = data && data.correlation_matrix ? data.correlation_matrix : null;
+  var rawCorrData = data && data.raw_correlation ? data.raw_correlation : corrData;
+  var lwCorrData = data && data.lw_correlation ? data.lw_correlation : null;
+  var lwPortfolio = data && data.lw_portfolio ? data.lw_portfolio : null;
+
+  if (!heatmapEl || !insightEl) return;
+
+  function bindCompareTabs() {
+    var tabButtons = comparePanelEl.querySelectorAll('.corr-tab-btn');
+    for (var ti = 0; ti < tabButtons.length; ti++) {
+      tabButtons[ti].onclick = function() {
+        var target = this.getAttribute('data-corr-tab');
+        var panes = comparePanelEl.querySelectorAll('.corr-tab-pane');
+        for (var bj = 0; bj < tabButtons.length; bj++) tabButtons[bj].classList.remove('active');
+        for (var pj = 0; pj < panes.length; pj++) panes[pj].classList.remove('active');
+        this.classList.add('active');
+        var pane = document.getElementById('corr-tab-' + target);
+        if (pane) pane.classList.add('active');
+      };
+    }
+  }
+
+  function renderSmallHeatmap(el, payload, title, subtitle) {
+    if (!el || !payload) return;
+    var labels = payload.labels || [];
+    var matrix = payload.matrix || [];
+    var annotations = [];
+    for (var row = 0; row < matrix.length; row++) {
+      for (var col = 0; col < matrix[row].length; col++) {
+        var val = matrix[row][col];
+        annotations.push({
+          x: labels[col],
+          y: labels[row],
+          text: val.toFixed(2),
+          showarrow: false,
+          font: {
+            family: 'JetBrains Mono, monospace',
+            size: 10,
+            color: Math.abs(val) > 0.42 ? '#f5f5f0' : '#171717'
+          }
+        });
+      }
+    }
+    el.innerHTML = '<div style="color:#d4d4cc;font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">' + title + '</div>'
+      + '<div style="color:#9ca3af;font-size:.78rem;line-height:1.5;margin-bottom:10px">' + subtitle + '</div>'
+      + '<div style="width:100%;height:220px" id="' + title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-mini"></div>';
+    var plotEl = el.querySelector('div[id$=\"-mini\"]');
+    Plotly.newPlot(plotEl, [{
+      type: 'heatmap',
+      z: matrix,
+      x: labels,
+      y: labels,
+      zmin: -1,
+      zmax: 1,
+      zmid: 0,
+      colorscale: [
+        [0, '#2c2c2c'],
+        [0.5, '#f5f5f0'],
+        [1, '#5a8a00']
+      ],
+      hoverongaps: false,
+      hovertemplate: '%{y} vs %{x}<br>Correlation: %{z:.2f}<extra></extra>',
+      xgap: 1,
+      ygap: 1,
+      colorbar: { thickness: 9, len: 0.72, outlinecolor: '#3a3a3a', tickfont: { family: 'JetBrains Mono, monospace', size: 9, color: '#d4d4cc' } }
+    }], {
+      paper_bgcolor: '#111111',
+      plot_bgcolor: '#111111',
+      margin: { l: 48, r: 36, t: 6, b: 36 },
+      annotations: annotations,
+      xaxis: { tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' }, showgrid: false, zeroline: false, fixedrange: true },
+      yaxis: { autorange: 'reversed', tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' }, showgrid: false, zeroline: false, fixedrange: true },
+      font: { family: 'JetBrains Mono, monospace', color: '#d4d4cc' }
+    }, { displayModeBar: false, responsive: true, scrollZoom: false });
+  }
+
+  function buildCorrelationChangeRows(rawPayload, lwPayload) {
+    if (!rawPayload || !lwPayload) return '';
+    var labels = rawPayload.labels || [];
+    var rawMatrix = rawPayload.matrix || [];
+    var lwMatrix = lwPayload.matrix || [];
+    var rows = '';
+    for (var i = 0; i < labels.length; i++) {
+      for (var j = i + 1; j < labels.length; j++) {
+        var rawVal = rawMatrix[i][j];
+        var lwVal = lwMatrix[i][j];
+        var delta = lwVal - rawVal;
+        var label = Math.abs(delta) < 0.01 ? 'unchanged' : (Math.abs(lwVal) < Math.abs(rawVal) ? 'shrunk' : 'pulled up');
+        var deltaColor = delta < 0 ? '#3a7000' : (delta > 0 ? '#b45309' : '#666');
+        rows += '<tr>'
+          + '<td>' + labels[i] + ' / ' + labels[j] + '</td>'
+          + '<td style="text-align:right">' + rawVal.toFixed(2) + '</td>'
+          + '<td style="text-align:right">' + lwVal.toFixed(2) + '</td>'
+          + '<td style="text-align:right;color:' + deltaColor + '">' + (delta >= 0 ? '+' : '') + delta.toFixed(2) + '</td>'
+          + '<td style="text-transform:uppercase;color:#666">' + label + '</td>'
+          + '</tr>';
+      }
+    }
+    return rows;
+  }
+
+  function buildPortfolioEffect(data) {
+    if (!lwPortfolio) {
+      portfolioEl.innerHTML = '<div style="padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555">Ledoit-Wolf comparison is unavailable because the shrinkage estimator is not installed in this environment.</div>';
+      return;
+    }
+    var tickers = data.tickers_used || Object.keys(data.weights || {});
+    var weightRows = '';
+    for (var wi = 0; wi < tickers.length; wi++) {
+      var ticker = tickers[wi];
+      var rawW = ((data.weights && data.weights[ticker]) || 0) * 100;
+      var lwW = ((lwPortfolio.weights && lwPortfolio.weights[ticker]) || 0) * 100;
+      weightRows += '<tr>'
+        + '<td>' + ticker + '</td>'
+        + '<td style="text-align:right">' + rawW.toFixed(1) + '%</td>'
+        + '<td style="text-align:right">' + lwW.toFixed(1) + '%</td>'
+        + '</tr>';
+    }
+    portfolioEl.innerHTML =
+      '<div class="corr-compare-kpis">'
+      + '<div style="padding:12px 14px;background:#fff;border:1px solid #e8e8e0"><div class="metric-label">Sample Sharpe</div><div class="metric-value good" style="font-size:1.2rem">' + (data.sharpe_ratio || 0).toFixed(3) + '</div></div>'
+      + '<div style="padding:12px 14px;background:#fff;border:1px solid #e8e8e0"><div class="metric-label">LW Sharpe</div><div class="metric-value good" style="font-size:1.2rem">' + (lwPortfolio.sr || 0).toFixed(3) + '</div></div>'
+      + '</div>'
+      + '<table class="corr-compare-table" style="margin-top:12px"><thead><tr><th>Ticker</th><th style="text-align:right">Sample Max Sharpe</th><th style="text-align:right">LW Max Sharpe</th></tr></thead><tbody>' + weightRows + '</tbody></table>'
+      + '<div style="margin-top:12px;padding:12px 16px;background:#f3f3ee;border-left:3px solid #5a8a00;font-size:.82rem;line-height:1.75;color:#555"><div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Quick Take</div>Sample covariance uses raw historical noise directly, while Ledoit-Wolf shrinks extreme estimates toward a more stable target. This is the cleanest way to see whether the portfolio is being driven by signal or by sampling noise.</div>';
+  }
+
+  if (!corrData || !corrData.matrix || !corrData.matrix.length || typeof Plotly === 'undefined') {
+    heatmapEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#888">Correlation matrix unavailable in simulated mode</div>';
+    insightEl.innerHTML = '<span style="color:#9ca3af">Live returns data is required to calculate pairwise correlations.</span>';
+    toggleEl.style.display = 'none';
+    comparePanelEl.classList.remove('open');
+    return;
+  }
+
+  var labels = corrData.labels || [];
+  var matrix = corrData.matrix || [];
+  var annotations = [];
+
+  for (var row = 0; row < matrix.length; row++) {
+    for (var col = 0; col < matrix[row].length; col++) {
+      var val = matrix[row][col];
+      annotations.push({
+        x: labels[col],
+        y: labels[row],
+        text: val.toFixed(2),
+        showarrow: false,
+        font: {
+          family: 'JetBrains Mono, monospace',
+          size: 11,
+          color: Math.abs(val) > 0.42 ? '#f5f5f0' : '#171717'
+        }
+      });
+    }
+  }
+
+  var heatmapTrace = {
+    type: 'heatmap',
+    z: matrix,
+    x: labels,
+    y: labels,
+    zmin: -1,
+    zmax: 1,
+    zmid: 0,
+    colorscale: [
+      [0, '#2c2c2c'],
+      [0.5, '#f5f5f0'],
+      [1, '#5a8a00']
+    ],
+    hoverongaps: false,
+    hovertemplate: '%{y} vs %{x}<br>Correlation: %{z:.2f}<extra></extra>',
+    xgap: 1,
+    ygap: 1,
+    colorbar: {
+      title: { text: 'Corr', side: 'right', font: { family: 'JetBrains Mono, monospace', size: 11, color: '#d4d4cc' } },
+      tickvals: [-1, 0, 1],
+      ticktext: ['-1', '0', '+1'],
+      tickfont: { family: 'JetBrains Mono, monospace', size: 10, color: '#d4d4cc' },
+      thickness: 10,
+      len: 0.8,
+      outlinecolor: '#3a3a3a'
+    }
+  };
+
+  var layout = {
+    paper_bgcolor: '#111111',
+    plot_bgcolor: '#111111',
+    margin: { l: 54, r: 50, t: 8, b: 46 },
+    annotations: annotations,
+    xaxis: {
+      side: 'bottom',
+      tickfont: { family: 'JetBrains Mono, monospace', size: 11, color: '#d4d4cc' },
+      tickangle: 0,
+      showgrid: false,
+      zeroline: false,
+      fixedrange: true
+    },
+    yaxis: {
+      autorange: 'reversed',
+      tickfont: { family: 'JetBrains Mono, monospace', size: 11, color: '#d4d4cc' },
+      showgrid: false,
+      zeroline: false,
+      fixedrange: true,
+      automargin: true
+    },
+    font: { family: 'JetBrains Mono, monospace', color: '#d4d4cc' }
+  };
+
+  Plotly.newPlot(heatmapEl, [heatmapTrace], layout, {
+    displayModeBar: false,
+    responsive: true,
+    scrollZoom: false
+  });
+
+  insightEl.innerHTML = buildCorrelationInterpretation(labels, matrix, data);
+
+  if (!lwCorrData || !lwPortfolio) {
+    if (toggleEl) { toggleEl.style.display = 'none'; toggleEl.classList.remove('active'); }
+    if (comparePanelEl) comparePanelEl.classList.remove('open');
+    return;
+  }
+
+  if (toggleEl) {
+    toggleEl.style.display = 'inline-flex';
+    toggleEl.onclick = function() {
+      comparePanelEl.classList.toggle('open');
+      toggleEl.classList.toggle('active', comparePanelEl.classList.contains('open'));
+    };
+  }
+
+  if (!rawHeatmapsEl || !changesEl || !portfolioEl) return;
+
+  rawHeatmapsEl.innerHTML =
+    '<div class="corr-heatmap-compare">'
+    + '<div class="corr-compare-card" id="corr-raw-heatmap-card"></div>'
+    + '<div class="corr-compare-card" id="corr-lw-heatmap-card"></div>'
+    + '</div>';
+  renderSmallHeatmap(document.getElementById('corr-raw-heatmap-card'), rawCorrData, 'Method 1 - Sample Correlation', 'Computed directly from historical returns');
+  renderSmallHeatmap(document.getElementById('corr-lw-heatmap-card'), lwCorrData, 'Method 2 - Ledoit-Wolf Shrinkage', 'Extreme values pulled toward a stable target');
+
+  changesEl.innerHTML =
+    '<table class="corr-compare-table"><thead><tr><th>Pair</th><th style="text-align:right">Sample</th><th style="text-align:right">LW</th><th style="text-align:right">Delta</th><th>Label</th></tr></thead><tbody>'
+    + buildCorrelationChangeRows(rawCorrData, lwCorrData)
+    + '</tbody></table>';
+
+  buildPortfolioEffect(data);
+  bindCompareTabs();
+}
+
+function buildCorrelationInterpretation(labels, matrix, data) {
+  if (!labels || labels.length < 2 || !matrix || matrix.length < 2) {
+    return '<span style="color:#9ca3af">Not enough assets selected to interpret pairwise diversification.</span>';
+  }
+
+  var maxPair = null;
+  var minPair = null;
+
+  for (var i = 0; i < matrix.length; i++) {
+    for (var j = i + 1; j < matrix[i].length; j++) {
+      var corr = matrix[i][j];
+      var pair = { a: labels[i], b: labels[j], corr: corr };
+      if (!maxPair || corr > maxPair.corr) maxPair = pair;
+      if (!minPair || corr < minPair.corr) minPair = pair;
+    }
+  }
+
+  var weights = data && data.weights ? data.weights : {};
+  var topTicker = null;
+  var topWeight = -Infinity;
+  for (var ticker in weights) {
+    if (Object.prototype.hasOwnProperty.call(weights, ticker) && weights[ticker] > topWeight) {
+      topTicker = ticker;
+      topWeight = weights[ticker];
+    }
+  }
+
+  var concentrationText = topTicker
+    ? 'This helps explain why the optimizer leans toward <strong>' + topTicker + '</strong> at ' + (topWeight * 100).toFixed(1) + '% when balancing diversification against expected return.'
+    : 'This helps explain how the optimizer balances diversification against expected return.';
+
+  var highSentence = '<strong>' + maxPair.a + '</strong> and <strong>' + maxPair.b + '</strong> are the most correlated pair at <strong>' + maxPair.corr.toFixed(2) + '</strong> - holding both offers limited diversification benefit.';
+  var lowSentence = '<strong>' + minPair.a + '</strong> and <strong>' + minPair.b + '</strong> are the least correlated pair at <strong>' + minPair.corr.toFixed(2) + '</strong>' + (minPair.corr < 0 ? ', giving the portfolio its strongest diversification offset.' : ', so they contribute the strongest diversification within this asset set.');
+
+  return '<div style="font-family:JetBrains Mono,monospace;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5a8a00;margin-bottom:6px">✦ Quick Take</div>'
+    + '<div>' + highSentence + '</div>'
+    + '<div style="margin-top:8px">' + lowSentence + '</div>'
+    + '<div style="margin-top:8px;color:#555">' + concentrationText + '</div>';
+}
+
+function drawFrontier(pts, data, rfr, canvasId, wrapId, overlayPts) {
+  canvasId = canvasId || 'frontier-canvas';
+  wrapId = wrapId || 'frontier-wrap';
+  var canvas = document.getElementById(canvasId);
+  var tooltipId = canvasId.replace('-canvas', '-tooltip');
+  var tooltip = document.getElementById(tooltipId);
+  var wrap = document.getElementById(wrapId);
   var mcCloud = data && data.mc_cloud ? data.mc_cloud : [];
-  if (!canvas || !tooltip || !wrap || !pts || !pts.length) return;
+  if (!canvas || !wrap || !pts || !pts.length) return;
   if (!rfr) rfr = 0.02;
+
+  wrap._frontierState = {
+    pts: pts.slice(),
+    data: data,
+    rfr: rfr,
+    canvasId: canvasId,
+    wrapId: wrapId,
+    overlayPts: overlayPts || null
+  };
+  if (typeof ResizeObserver !== 'undefined' && !wrap._frontierResizeObserver) {
+    wrap._frontierResizeObserver = new ResizeObserver(function() {
+      if (!wrap._frontierState) return;
+      var s = wrap._frontierState;
+      drawFrontier(s.pts, s.data, s.rfr, s.canvasId, s.wrapId, s.overlayPts);
+    });
+    wrap._frontierResizeObserver.observe(wrap);
+  }
 
   pts = pts.slice().sort(function(a, b) { return a.vol - b.vol; });
 
   var dpr = window.devicePixelRatio || 1;
   var cssW = wrap.clientWidth || 580;
-  var cssH = 320;
+  var cssH = 420;
   canvas.style.width = cssW + 'px';
   canvas.style.height = cssH + 'px';
   canvas.width = cssW * dpr;
@@ -1311,30 +3448,46 @@ function drawFrontier(pts, data, rfr) {
   var W = cssW;
   var H = cssH;
   var padL = 68;
-  var padR = 28;
+  var padR = 168;
   var padT = 26;
   var padB = 54;
 
   var ms = data.max_sharpe || { vol: data.volatility, ret: data.expected_return, sr: data.sharpe_ratio };
   var mv = data.min_variance || pts[0];
-  var mr = data.max_return || pts[pts.length - 1];
   var eq = data.equal_weighted || null;
 
-  var allVols = pts.map(function(p) { return p.vol; }).concat([ms.vol, mv.vol, mr.vol]);
-  var allRets = pts.map(function(p) { return p.ret; }).concat([ms.ret, mv.ret, mr.ret, rfr]);
-  if (mcCloud && mcCloud.length) {
-    allVols = allVols.concat(mcCloud.map(function(p) { return p.vol; }));
-    allRets = allRets.concat(mcCloud.map(function(p) { return p.ret; }));
+  function nearestPointIndex(targetVol, targetRet) {
+    var bestIdx = 0;
+    var bestDist = Infinity;
+    for (var pi = 0; pi < pts.length; pi++) {
+      var dv = pts[pi].vol - targetVol;
+      var dr = pts[pi].ret - targetRet;
+      var dist = dv * dv + dr * dr;
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = pi;
+      }
+    }
+    return bestIdx;
   }
+
+  var mvIdx = nearestPointIndex(mv.vol, mv.ret);
+  var msIdx = nearestPointIndex(ms.vol, ms.ret);
+  var displayEndIdx = pts.length - 1;
+  var displayPts = pts.slice(mvIdx, displayEndIdx + 1);
+  if (displayPts.length < 2) displayPts = pts.slice(0, Math.min(pts.length, 2));
+
+  var allVols = displayPts.map(function(p) { return p.vol; }).concat([ms.vol, mv.vol]);
+  var allRets = displayPts.map(function(p) { return p.ret; }).concat([ms.ret, mv.ret, rfr]);
   if (eq && eq.vol && eq.ret) {
     allVols.push(eq.vol);
     allRets.push(eq.ret);
   }
 
   var minV = 0;
-  var maxV = Math.max.apply(null, allVols) * 1.12;
+  var maxV = Math.max.apply(null, allVols) * 1.15;
   var minR = Math.min(rfr, Math.min.apply(null, allRets)) * 0.92;
-  var maxR = Math.max.apply(null, allRets) * 1.1;
+  var maxR = Math.max.apply(null, allRets) * 1.15;
 
   function xp(v) {
     return padL + ((v - minV) / (maxV - minV)) * (W - padL - padR);
@@ -1355,19 +3508,39 @@ function drawFrontier(pts, data, rfr) {
     ctx.closePath();
   }
 
+  function viridisColor(t, alpha) {
+    var stops = [
+      [44, 44, 44],
+      [104, 109, 118],
+      [90, 138, 0],
+      [130, 180, 40],
+      [200, 241, 53]
+    ];
+    var clamped = Math.max(0, Math.min(1, t));
+    var scaled = clamped * (stops.length - 1);
+    var idx = Math.min(stops.length - 2, Math.floor(scaled));
+    var frac = scaled - idx;
+    var c0 = stops[idx];
+    var c1 = stops[idx + 1];
+    var r = Math.round(c0[0] + (c1[0] - c0[0]) * frac);
+    var g = Math.round(c0[1] + (c1[1] - c0[1]) * frac);
+    var b = Math.round(c0[2] + (c1[2] - c0[2]) * frac);
+    if (typeof alpha === 'number') return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
   var markers = [
-    { key: 'mv', name: 'Min Variance', color: '#2ca02c', shape: 'circle', vol: mv.vol, ret: mv.ret, sr: mv.sr || ((mv.ret - rfr) / Math.max(mv.vol, 0.0001)) },
-    { key: 'ms', name: 'Max Sharpe', color: '#ff7f0e', shape: 'star', vol: ms.vol, ret: ms.ret, sr: ms.sr || data.sharpe_ratio },
-    { key: 'mr', name: 'Max Return', color: '#d62728', shape: 'triangle', vol: mr.vol, ret: mr.ret, sr: mr.sr || ((mr.ret - rfr) / Math.max(mr.vol, 0.0001)) }
+    { key: 'mv', name: 'Min Variance', color: '#5a8a00', shape: 'circle', vol: mv.vol, ret: mv.ret, sr: mv.sr || ((mv.ret - rfr) / Math.max(mv.vol, 0.0001)) },
+    { key: 'ms', name: 'Max Sharpe', color: '#c8f135', shape: 'triangle', vol: ms.vol, ret: ms.ret, sr: ms.sr || data.sharpe_ratio }
   ];
   if (eq && eq.vol && eq.ret) {
-    markers.push({ key: 'eq', name: 'Equal Weight', color: '#9467bd', shape: 'diamond', vol: eq.vol, ret: eq.ret, sr: eq.sr || ((eq.ret - rfr) / Math.max(eq.vol, 0.0001)) });
+    markers.push({ key: 'eq', name: 'Equal Weight', color: '#9ca3af', shape: 'diamond', vol: eq.vol, ret: eq.ret, sr: eq.sr || ((eq.ret - rfr) / Math.max(eq.vol, 0.0001)) });
   }
 
   function drawMarker(marker, active) {
     var px = xp(marker.vol);
     var py = yp(marker.ret);
-    var size = active ? 9 : 7;
+    var size = active ? 11 : 9;
 
     ctx.save();
     ctx.fillStyle = marker.color;
@@ -1409,22 +3582,19 @@ function drawFrontier(pts, data, rfr) {
   }
 
   function drawLegend() {
-    var boxX = padL + 8;
-    var boxY = padT + 8;
-    var boxW = 150;
-    var extraRows = markers.length > 3 ? 1 : 0;
-    if (mcCloud.length > 0) extraRows += 1;
-    var boxH = 78 + extraRows * 18;
-
-    ctx.fillStyle = 'rgba(255,255,255,0.93)';
-    ctx.strokeStyle = '#ddd';
-    ctx.lineWidth = 1;
-    ctx.fillRect(boxX, boxY, boxW, boxH);
-    ctx.strokeRect(boxX, boxY, boxW, boxH);
+    var colX = W - padR + 16;
+    var titleY = padT + 10;
+    var legendX = colX;
+    var baseRowY = titleY + 22;
+    var legendRows = markers.length > 2 ? 5 : 4;
+    var barX = colX + 26;
+    var barY = baseRowY + legendRows * 18 + 10;
+    var barW = 12;
+    var barH = 148;
 
     function legendItem(color, shape, text, row) {
-      var ix = boxX + 14;
-      var iy = boxY + 16 + row * 18;
+      var ix = legendX;
+      var iy = baseRowY + row * 18;
       ctx.fillStyle = color;
 
       if (shape === 'circle') {
@@ -1436,9 +3606,9 @@ function drawFrontier(pts, data, rfr) {
         ctx.fill();
       } else if (shape === 'triangle') {
         ctx.beginPath();
-        ctx.moveTo(ix, iy - 6);
-        ctx.lineTo(ix + 5, iy + 4);
-        ctx.lineTo(ix - 5, iy + 4);
+        ctx.moveTo(ix, iy - 6.5);
+        ctx.lineTo(ix + 5.5, iy + 4.5);
+        ctx.lineTo(ix - 5.5, iy + 4.5);
         ctx.closePath();
         ctx.fill();
       } else if (shape === 'diamond') {
@@ -1468,26 +3638,55 @@ function drawFrontier(pts, data, rfr) {
         ctx.restore();
       }
 
-      ctx.fillStyle = '#444';
+      ctx.fillStyle = '#d4d4cc';
       ctx.font = '9px JetBrains Mono,monospace';
       ctx.textAlign = 'left';
       ctx.fillText(text, ix + 12, iy + 3);
     }
 
-    legendItem('#2ca02c', 'circle', 'Min Variance', 0);
-    legendItem('#ff7f0e', 'star', 'Max Sharpe', 1);
-    legendItem('#d62728', 'triangle', 'Max Return', 2);
-    if (markers.length > 3) legendItem('#9467bd', 'diamond', 'Equal Weight', 3);
-    legendItem('#4aaa88', 'line', 'Capital Mkt Line', markers.length > 3 ? 4 : 3);
-    if (mcCloud.length > 0) legendItem('#3a7dd0', 'dot', 'MC Simulations', markers.length > 3 ? 5 : 4);
+    ctx.fillStyle = '#d4d4cc';
+    ctx.font = '9px JetBrains Mono,monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('PORTFOLIOS', colX, titleY);
+
+    legendItem('#5a8a00', 'circle', 'Min Variance', 0);
+    legendItem('#c8f135', 'triangle', 'Max Sharpe', 1);
+    if (markers.length > 2) legendItem('#9ca3af', 'diamond', 'Equal Weight', 2);
+    legendItem('#9ca3af', 'line', 'Capital Mkt Line', markers.length > 2 ? 3 : 2);
+    if (mcCloud.length > 0) legendItem(viridisColor(0.55), 'dot', 'MC Simulations', markers.length > 2 ? 4 : 3);
+
+    if (mcCloud.length > 0) {
+      var gradBar = ctx.createLinearGradient(0, barY + barH, 0, barY);
+      gradBar.addColorStop(0, viridisColor(0));
+      gradBar.addColorStop(0.25, viridisColor(0.25));
+      gradBar.addColorStop(0.5, viridisColor(0.5));
+      gradBar.addColorStop(0.75, viridisColor(0.75));
+      gradBar.addColorStop(1, viridisColor(1));
+      ctx.fillStyle = gradBar;
+      ctx.fillRect(barX, barY, barW, barH);
+      ctx.strokeStyle = '#666666';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX, barY, barW, barH);
+
+      ctx.fillStyle = '#d4d4cc';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('Sharpe Ratio', colX, barY - 10);
+      ctx.font = '8px JetBrains Mono,monospace';
+      ctx.fillText('High', barX + barW + 8, barY + 7);
+      ctx.fillText('Mid', barX + barW + 8, barY + barH / 2 + 3);
+      ctx.fillText('Low', barX + barW + 8, barY + barH + 1);
+    }
   }
 
   function redraw(activeKey) {
     ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(0, 0, W, H);
 
     var nX = 6;
     var nY = 5;
-    ctx.strokeStyle = '#e4e4dc';
+    ctx.strokeStyle = '#2c2c2c';
     ctx.lineWidth = 1;
     for (var gx = 0; gx <= nX; gx++) {
       var xx = padL + gx * (W - padL - padR) / nX;
@@ -1504,7 +3703,7 @@ function drawFrontier(pts, data, rfr) {
       ctx.stroke();
     }
 
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#d4d4cc';
     ctx.font = '10px JetBrains Mono,monospace';
     ctx.textAlign = 'center';
     for (var lx = 0; lx <= nX; lx++) {
@@ -1518,7 +3717,7 @@ function drawFrontier(pts, data, rfr) {
       ctx.fillText((lyv * 100).toFixed(1) + '%', padL - 8, padT + ly * (H - padT - padB) / nY + 4);
     }
 
-    ctx.fillStyle = '#999';
+    ctx.fillStyle = '#d4d4cc';
     ctx.font = '9px JetBrains Mono,monospace';
     ctx.textAlign = 'center';
     ctx.fillText('RISK (VOLATILITY)', padL + (W - padL - padR) / 2, H - 6);
@@ -1528,25 +3727,13 @@ function drawFrontier(pts, data, rfr) {
     ctx.fillText('EXPECTED RETURN', 0, 0);
     ctx.restore();
 
-    ctx.strokeStyle = '#bbb';
+    ctx.strokeStyle = '#666666';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(padL, padT);
     ctx.lineTo(padL, H - padB);
     ctx.lineTo(W - padR, H - padB);
     ctx.stroke();
-
-    var cmlEndVol = maxV * 0.985;
-    var cmlEndRet = rfr + ((ms.ret - rfr) / Math.max(ms.vol, 0.0001)) * cmlEndVol;
-    ctx.save();
-    ctx.setLineDash([6, 5]);
-    ctx.strokeStyle = '#4aaa88';
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(xp(0), yp(rfr));
-    ctx.lineTo(xp(cmlEndVol), yp(cmlEndRet));
-    ctx.stroke();
-    ctx.restore();
 
     if (mcCloud.length > 0) {
       var srMin = mcCloud[0].sr;
@@ -1564,53 +3751,82 @@ function drawFrontier(pts, data, rfr) {
         if (mpx < padL || mpx > W - padR || mpy < padT || mpy > H - padB) continue;
 
         var t = (mp.sr - srMin) / srRange;
-        var r;
-        var g;
-        var b;
-        if (t < 0.5) {
-          var u1 = t * 2;
-          r = Math.round(170 + (58 - 170) * u1);
-          g = Math.round(170 + (125 - 170) * u1);
-          b = Math.round(170 + (208 - 170) * u1);
-        } else {
-          var u2 = (t - 0.5) * 2;
-          r = Math.round(58 + (90 - 58) * u2);
-          g = Math.round(125 + (138 - 125) * u2);
-          b = Math.round(208 + (0 - 208) * u2);
-        }
-
-        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.28)';
+        ctx.fillStyle = viridisColor(t, 0.35);
         ctx.beginPath();
-        ctx.arc(mpx, mpy, 2, 0, Math.PI * 2);
+        ctx.arc(mpx, mpy, 1.8, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     var grad = ctx.createLinearGradient(0, padT, 0, H - padB);
-    grad.addColorStop(0, 'rgba(58,125,208,0.12)');
-    grad.addColorStop(1, 'rgba(58,125,208,0.015)');
-    ctx.beginPath();
-    ctx.moveTo(xp(pts[0].vol), H - padB);
-    for (var fi = 0; fi < pts.length; fi++) {
-      ctx.lineTo(xp(pts[fi].vol), yp(pts[fi].ret));
+    grad.addColorStop(0, 'rgba(90,138,0,0.26)');
+    grad.addColorStop(1, 'rgba(90,138,0,0.04)');
+    var drawPts = displayPts.slice();
+    if (drawPts.length >= 2) {
+      var startStepVol = drawPts[1].vol - drawPts[0].vol;
+      var startStepRet = drawPts[1].ret - drawPts[0].ret;
+      var endStepVol = drawPts[drawPts.length - 1].vol - drawPts[drawPts.length - 2].vol;
+      var endStepRet = drawPts[drawPts.length - 1].ret - drawPts[drawPts.length - 2].ret;
+      drawPts.unshift({
+        vol: Math.max(0, drawPts[0].vol - startStepVol * 0.45),
+        ret: drawPts[0].ret - startStepRet * 0.45
+      });
+      drawPts.push({
+        vol: drawPts[drawPts.length - 1].vol + endStepVol * 0.35,
+        ret: drawPts[drawPts.length - 1].ret + endStepRet * 0.35
+      });
     }
-    ctx.lineTo(xp(pts[pts.length - 1].vol), H - padB);
+
+    ctx.beginPath();
+    ctx.moveTo(xp(drawPts[0].vol), H - padB);
+    for (var fi = 0; fi < drawPts.length; fi++) {
+      ctx.lineTo(xp(drawPts[fi].vol), yp(drawPts[fi].ret));
+    }
+    ctx.lineTo(xp(drawPts[drawPts.length - 1].vol), H - padB);
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
 
-    ctx.strokeStyle = '#2f6fb8';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#f5f5f0';
+    ctx.lineWidth = 2.8;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.beginPath();
-    for (var ci = 0; ci < pts.length; ci++) {
-      var fx = xp(pts[ci].vol);
-      var fy = yp(pts[ci].ret);
+    for (var ci = 0; ci < drawPts.length; ci++) {
+      var fx = xp(drawPts[ci].vol);
+      var fy = yp(drawPts[ci].ret);
       if (ci === 0) ctx.moveTo(fx, fy);
       else ctx.lineTo(fx, fy);
     }
     ctx.stroke();
+
+    var cmlEndVol = maxV * 0.985;
+    var cmlEndRet = rfr + ((ms.ret - rfr) / Math.max(ms.vol, 0.0001)) * cmlEndVol;
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = '#9ca3af';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(xp(0), yp(rfr));
+    ctx.lineTo(xp(cmlEndVol), yp(cmlEndRet));
+    ctx.stroke();
+    ctx.restore();
+
+    // Draw MVO overlay if overlayPts provided (faint grey dashed reference)
+    if (overlayPts && overlayPts.length > 1) {
+      var oPts = overlayPts.slice().sort(function(a,b){return a.vol - b.vol;});
+      ctx.save();
+      ctx.setLineDash([3, 5]);
+      ctx.strokeStyle = 'rgba(156,163,175,0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (var oi = 0; oi < oPts.length; oi++) {
+        var ox = xp(oPts[oi].vol), oy = yp(oPts[oi].ret);
+        if (oi === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
 
     for (var mi = 0; mi < markers.length; mi++) {
       drawMarker(markers[mi], markers[mi].key === activeKey);
@@ -1620,11 +3836,12 @@ function drawFrontier(pts, data, rfr) {
   }
 
   function setTooltip(marker, clientX, clientY) {
+    if (!tooltip) return;
     tooltip.style.display = 'block';
     tooltip.style.borderLeft = '3px solid ' + marker.color;
     tooltip.innerHTML =
       '<div style="font-family:JetBrains Mono,monospace;font-size:.64rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:' + marker.color + ';margin-bottom:6px">' + marker.name + '</div>' +
-      '<div style="font-family:JetBrains Mono,monospace;font-size:.75rem;color:#444;line-height:1.7">Return: ' + (marker.ret * 100).toFixed(2) + '%<br>Volatility: ' + (marker.vol * 100).toFixed(2) + '%<br>Sharpe: ' + (marker.sr || 0).toFixed(3) + '</div>';
+      '<div style="font-family:JetBrains Mono,monospace;font-size:.75rem;color:#444;line-height:1.7">Return: ' + (marker.ret * 100).toFixed(2) + '%<br>Risk: ' + (marker.vol * 100).toFixed(2) + '%<br>Sharpe: ' + (marker.sr || 0).toFixed(3) + '</div>';
 
     var wrapRect = wrap.getBoundingClientRect();
     var tooltipRect = tooltip.getBoundingClientRect();
@@ -1641,7 +3858,7 @@ function drawFrontier(pts, data, rfr) {
   }
 
   function hideTooltip() {
-    tooltip.style.display = 'none';
+    if (tooltip) tooltip.style.display = 'none';
   }
 
   canvas.onmousemove = function(e) {
